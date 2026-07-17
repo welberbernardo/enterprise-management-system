@@ -1,144 +1,144 @@
 # Roadmap
 
-This roadmap outlines the planned evolution of the **Enterprise Management System (EMS)**. Dates are indicative and may shift based on feedback and capacity. Each entry lists target features and any associated technical-debt items to address.
+Este roadmap descreve a evolução planejada do **Sistema de Gestão Empresarial (EMS)**. As datas são indicativas e podem mudar com base em feedback e capacidade. Cada entrada lista os recursos alvo e quaisquer itens de dívida técnica associados a resolver.
 
 ---
 
-## Version Timeline Overview
+## Visão Geral da Linha do Tempo de Versões
 
-| Version | Status | Theme | Target |
+| Versão | Status | Tema | Alvo |
 | --- | --- | --- | --- |
-| 1.0.0 | ✅ Released | Initial Release | 2026-07-17 |
-| 1.1.0 | 📋 Planned | Enhanced Reporting | 2026-Q4 |
-| 1.2.0 | 📋 Planned | Multi-company Support | 2027-Q1 |
-| 1.3.0 | 📋 Planned | Advanced Analytics | 2027-Q2 |
-| 2.0.0 | 📋 Planned | Mobile App | 2027-Q3 |
-| 2.1.0 | 📋 Planned | AI-powered Insights | 2027-Q4 |
-| 2.2.0 | 📋 Planned | Integration Marketplace | 2028-Q1 |
-| 3.0.0 | 🔮 Future | Microservices Migration | 2028+ |
+| 1.0.0 | ✅ Lançado | Lançamento Inicial | 2026-07-17 |
+| 1.1.0 | 📋 Planejado | Relatórios Aprimorados | 2026-Q4 |
+| 1.2.0 | 📋 Planejado | Suporte Multi-empresa | 2027-Q1 |
+| 1.3.0 | 📋 Planejado | Análise Avançada | 2027-Q2 |
+| 2.0.0 | 📋 Planejado | Aplicativo Mobile | 2027-Q3 |
+| 2.1.0 | 📋 Planejado | Insights com IA | 2027-Q4 |
+| 2.2.0 | 📋 Planejado | Marketplace de Integrações | 2028-Q1 |
+| 3.0.0 | 🔮 Futuro | Migração para Microserviços | 2028+ |
 
-Legend: ✅ Released · 📋 Planned · 🔮 Future
-
----
-
-## 1.0.0 — Current: Initial Release
-**Status:** Released 2026-07-17
-
-Full feature set: authentication, RBAC, customers, suppliers, products, orders, invoices (PDF), inventory, finance, dashboard, reports, audit logs. See [CHANGELOG.md](CHANGELOG.md).
+Legenda: ✅ Lançado · 📋 Planejado · 🔮 Futuro
 
 ---
 
-## 1.1.0 — Planned: Enhanced Reporting
-**Target:** 2026-Q4
+## 1.0.0 — Atual: Lançamento Inicial
+**Status:** Lançado em 2026-07-17
 
-### Features
-- Scheduled report delivery (email on a cron).
-- Custom report builder (drag-and-drop columns, filters, saved views).
-- Pivot/summary tables and bar/line/pie exports.
-- CSV/Excel bulk import for customers, products, and suppliers.
-- Localization of report labels.
-
-### Technical Debt
-- Replace ad-hoc report queries with a shared reporting repository.
-- Add integration tests for each report type.
+Conjunto completo de funcionalidades: autenticação, RBAC, clientes, fornecedores, produtos, pedidos, faturas (PDF), estoque, finanças, painel, relatórios, logs de auditoria. Consulte [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
-## 1.2.0 — Planned: Multi-company Support
-**Target:** 2027-Q1
+## 1.1.0 — Planejado: Relatórios Aprimorados
+**Alvo:** 2026-Q4
 
-### Features
-- Tenant/company scoping on all business data.
-- Company switcher in the UI with per-company settings and branding.
-- Cross-company consolidated reports (admin only).
-- Per-company user assignments and roles.
+### Funcionalidades
+- Entrega agendada de relatórios (email em cron).
+- Construtor de relatórios personalizado (arrastar e soltar colunas, filtros, visualizações salvas).
+- Tabelas de resumo/pivô e exportações bar/line/pie.
+- Importação em massa CSV/Excel para clientes, produtos e fornecedores.
+- Localização de rótulos de relatórios.
 
-### Technical Debt
-- Introduce a `CompanyId` discriminator across the 18 tables (migration strategy).
-- Enforce tenant isolation at the repository/query-filter layer.
-- Audit log must capture company context.
-
----
-
-## 1.3.0 — Planned: Advanced Analytics
-**Target:** 2027-Q2
-
-### Features
-- Cohort and retention analysis for customers.
-- Inventory turnover and dead-stock detection.
-- Margin and profitability analytics by product/category.
-- Forecasted cash flow based on receivables/payables aging.
-- Configurable dashboard widgets (user-customizable layouts).
-
-### Technical Debt
-- Introduce a read-optimized reporting database / materialized views.
-- Migrate dashboard aggregates to the caching layer (Redis).
+### Dívida Técnica
+- Substituir queries de relatório ad-hoc por um repositório de relatórios compartilhado.
+- Adicionar testes de integração para cada tipo de relatório.
 
 ---
 
-## 2.0.0 — Planned: Mobile App
-**Target:** 2027-Q3
+## 1.2.0 — Planejado: Suporte Multi-empresa
+**Alvo:** 2027-Q1
 
-### Features
-- Native/hybrid mobile app (iOS & Android) for field staff.
-- Barcode/QR scanning for inventory and products.
-- Offline-first order entry with sync on reconnect.
-- Push notifications for low stock and overdue invoices.
+### Funcionalidades
+- Escopo de tenant/empresa em todos os dados de negócio.
+- Seletor de empresa na UI com configurações e branding por empresa.
+- Relatórios consolidados entre empresas (apenas admin).
+- Atribuições de usuários e funções por empresa.
 
-### Technical Debt
-- Extract shared API client into an SDK consumable by web + mobile.
-- Harden API for intermittent connectivity (idempotent writes, sync tokens).
-
----
-
-## 2.1.0 — Planned: AI-powered Insights
-**Target:** 2027-Q4
-
-### Features
-- Demand forecasting for products using historical sales.
-- Anomaly detection on transactions and inventory.
-- Natural-language query ("show me top customers this quarter").
-- Smart payment reminders and dunning suggestions.
-
-### Technical Debt
-- Define an ML feature store fed from the reporting DB.
-- Establish model governance, evaluation, and rollback procedures.
+### Dívida Técnica
+- Introduzir um discriminador `CompanyId` nas 18 tabelas (estratégia de migração).
+- Impor isolamento de tenant na camada de repositório/filtro de query.
+- Log de auditoria deve capturar contexto de empresa.
 
 ---
 
-## 2.2.0 — Planned: Integration Marketplace
-**Target:** 2028-Q1
+## 1.3.0 — Planejado: Análise Avançada
+**Alvo:** 2027-Q2
 
-### Features
-- Plugin/connector framework (webhooks + REST adapters).
-- Prebuilt connectors: payment gateways, accounting (e.g., QuickBooks), shipping, e-commerce.
-- OAuth app registration for third-party developers.
-- Event bus for outbound domain events.
+### Funcionalidades
+- Análise de coorte e retenção de clientes.
+- Rotatividade de estoque e detecção de itens mortos.
+- Análise de margem e lucratividade por produto/categoria.
+- Fluxo de caixa previsto com base em vencimento de contas a receber/pagar.
+- Widgets de painel configuráveis (layouts personalizáveis pelo usuário).
 
-### Technical Debt
-- Formalize the outbound event schema and versioning.
-- Build a connector sandbox and review process.
-
----
-
-## 3.0.0 — Future: Microservices Migration
-**Target:** 2028 and beyond
-
-### Features
-- Decompose the monolith into domain services (Identity, Catalog, Orders, Billing, Inventory, Finance, Reporting).
-- API gateway with unified auth and routing.
-- Event-driven communication (message broker).
-- Independent deployability and scaling per service.
-
-### Technical Debt
-- Eliminate shared database coupling (per-service databases).
-- Implement distributed tracing and saga-based consistency.
-- Migrate from in-process MediatR to cross-service messaging.
+### Dívida Técnica
+- Introduzir um banco de dados de relatórios otimizado para leitura / views materializadas.
+- Migrar agregados do painel para a camada de cache (Redis).
 
 ---
 
-## How to Influence the Roadmap
+## 2.0.0 — Planejado: Aplicativo Mobile
+**Alvo:** 2027-Q3
 
-- Open a feature request: https://github.com/enterprise/ems/issues
-- Join the community: https://community.ems.example.com
-- Priorities are reviewed each quarter based on user feedback and adoption metrics.
+### Funcionalidades
+- Aplicativo mobile nativo/híbrido (iOS e Android) para equipe de campo.
+- Escaneamento de código de barras/QR para estoque e produtos.
+- Entrada de pedido offline-first com sincronização na reconexão.
+- Notificações push para estoque baixo e faturas vencidas.
+
+### Dívida Técnica
+- Extrair cliente API compartilhado para um SDK consumível por web + mobile.
+- Reforçar API para conectividade intermitente (escritas idempotentes, tokens de sincronização).
+
+---
+
+## 2.1.0 — Planejado: Insights com IA
+**Alvo:** 2027-Q4
+
+### Funcionalidades
+- Previsão de demanda para produtos usando vendas históricas.
+- Detecção de anomalias em transações e estoque.
+- Consulta em linguagem natural ("mostre-me os top clientes deste trimestre").
+- Lembretes inteligentes de pagamento e sugestões de cobrança.
+
+### Dívida Técnica
+- Definir um feature store ML alimentado pelo banco de dados de relatórios.
+- Estabelecer governança de modelo, avaliação e procedimentos de rollback.
+
+---
+
+## 2.2.0 — Planejado: Marketplace de Integrações
+**Alvo:** 2028-Q1
+
+### Funcionalidades
+- Framework de plugin/conector (webhooks + adaptadores REST).
+- Conectores pré-construídos: gateways de pagamento, contabilidade (ex., QuickBooks), frete, e-commerce.
+- Registro de app OAuth para desenvolvedores terceiros.
+- Barramento de eventos para eventos de domínio de saída.
+
+### Dívida Técnica
+- Formalizar o esquema de eventos de saída e versionamento.
+- Construir um sandbox de conectores e processo de revisão.
+
+---
+
+## 3.0.0 — Futuro: Migração para Microserviços
+**Alvo:** 2028 e além
+
+### Funcionalidades
+- Decompor o monólito em serviços de domínio (Identity, Catalog, Orders, Billing, Inventory, Finance, Reporting).
+- API gateway com auth unificada e roteamento.
+- Comunicação orientada a eventos (message broker).
+- Implantabilidade e escalonamento independentes por serviço.
+
+### Dívida Técnica
+- Eliminar acoplamento de banco de dados compartilhado (bancos por serviço).
+- Implementar tracing distribuído e consistência baseada em saga.
+- Migrar de MediatR em processo para mensageria entre serviços.
+
+---
+
+## Como Influenciar o Roadmap
+
+- Abra uma solicitação de funcionalidade: https://github.com/enterprise/ems/issues
+- Junte-se à comunidade: https://community.ems.example.com
+- Prioridades são revisadas a cada trimestre com base em feedback e métricas de adoção.

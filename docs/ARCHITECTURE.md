@@ -1,31 +1,31 @@
-# Architecture Documentation
+# Documentação de Arquitetura
 
-This document explains the **Enterprise Management System (EMS)** architecture: how the system is structured, how the layers interact, and the key technical decisions behind them.
-
----
-
-## Table of Contents
-
-- [System Architecture Overview](#system-architecture-overview)
-- [Clean Architecture Layers](#clean-architecture-layers)
-- [Frontend Architecture](#frontend-architecture)
-- [Backend Architecture](#backend-architecture)
-- [Database Architecture](#database-architecture)
-- [Authentication / Authorization Flow](#authentication--authorization-flow)
-- [Data Flow](#data-flow)
-- [API Versioning Strategy](#api-versioning-strategy)
-- [Error Handling Strategy](#error-handling-strategy)
-- [Logging Strategy](#logging-strategy)
-- [Caching Strategy](#caching-strategy)
-- [Security Considerations](#security-considerations)
-- [Scalability Considerations](#scalability-considerations)
-- [Technology Decisions](#technology-decisions)
+Este documento explica a arquitetura do **Sistema de Gestão Empresarial (EMS)**: como o sistema é estruturado, como as camadas interagem e as principais decisões técnicas por trás delas.
 
 ---
 
-## System Architecture Overview
+## Índice
 
-EMS is a **client-server** system with a clear separation between the presentation tier (Angular SPA) and the API tier (.NET Web API), both backed by a single SQL Server database.
+- [Visão Geral da Arquitetura do Sistema](#visão-geral-da-arquitetura-do-sistema)
+- [Camadas de Arquitetura Limpa](#camadas-de-arquitetura-limpa)
+- [Arquitetura do Frontend](#arquitetura-do-frontend)
+- [Arquitetura do Backend](#arquitetura-do-backend)
+- [Arquitetura do Banco de Dados](#arquitetura-do-banco-de-dados)
+- [Fluxo de Autenticação / Autorização](#fluxo-de-autentificação--autorização)
+- [Fluxo de Dados](#fluxo-de-dados)
+- [Estratégia de Versionamento da API](#estratégia-de-versionamento-da-api)
+- [Estratégia de Tratamento de Erros](#estratégia-de-tratamento-de-erros)
+- [Estratégia de Logging](#estratégia-de-logging)
+- [Estratégia de Cache](#estratégia-de-cache)
+- [Considerações de Segurança](#considerações-de-segurança)
+- [Considerações de Escalabilidade](#considerações-de-escalabilidade)
+- [Decisões Tecnológicas](#decisões-tecnológicas)
+
+---
+
+## Visão Geral da Arquitetura do Sistema
+
+O EMS é um sistema **client-server** com separação clara entre a camada de apresentação (Angular SPA) e a camada de API (.NET Web API), ambas suportadas por um único banco de dados SQL Server.
 
 ```
 ┌────────────────────┐        HTTPS / JSON         ┌──────────────────────┐
@@ -35,20 +35,20 @@ EMS is a **client-server** system with a clear separation between the presentati
 │  - State (signals)│                             │   - MediatR handlers  │
 │  - HTTP client     │                             │   - Domain services  │
 └────────────────────┘                             └──────────┬───────────┘
-                                                              │ EF Core 9
-                                                              ▼
-                                                    ┌────────────────────┐
-                                                    │  SQL Server (EMS)  │
-                                                    │  - 18 tables       │
-                                                    │  - Migrations      │
-                                                    └────────────────────┘
+                                                               │ EF Core 9
+                                                               ▼
+                                                     ┌────────────────────┐
+                                                     │  SQL Server (EMS)  │
+                                                     │  - 18 tables       │
+                                                     │  - Migrations      │
+                                                     └────────────────────┘
 ```
 
 ---
 
-## Clean Architecture Layers
+## Camadas de Arquitetura Limpa
 
-The backend follows **Clean Architecture** (Dependency Rule: dependencies point inward).
+O backend segue a **Arquitetura Limpa** (Regra de Dependência: dependências apontam para dentro).
 
 ```
 EMS.Api (Presentation)
@@ -60,66 +60,66 @@ EMS.Domain / Core (Entities, value objects, domain rules)
 EMS.Infrastructure (EF Core, repositories, external services)
 ```
 
-| Layer | Responsibility | Key types |
+| Camada | Responsabilidade | Tipos principais |
 | --- | --- | --- |
-| **Core / Domain** | Business entities and rules; no external dependencies. | `User`, `Order`, `Product`, `Invoice`, domain services. |
-| **Application** | Use cases, command/query handlers, DTOs, interfaces (abstractions). | `CreateOrderCommand`, `GetOrdersQuery`, `IRepository<T>`. |
-| **Infrastructure** | Concrete implementations: EF Core `DbContext`, repositories, email, file storage. | `AppDbContext`, `EfRepository<T>`, `SmtpEmailService`. |
-| **Presentation (Api)** | HTTP concerns: controllers, middleware, JWT, validation, Swagger. | `OrdersController`, `Program.cs`, filters. |
+| **Core / Domain** | Entidades e regras de negócio; sem dependências externas. | `User`, `Order`, `Product`, `Invoice`, domain services. |
+| **Application** | Casos de uso, handlers de command/query, DTOs, interfaces (abstrações). | `CreateOrderCommand`, `GetOrdersQuery`, `IRepository<T>`. |
+| **Infrastructure** | Implementações concretas: `DbContext` EF Core, repositórios, email, armazenamento de arquivos. | `AppDbContext`, `EfRepository<T>`, `SmtpEmailService`. |
+| **Presentation (Api)** | Preocupações HTTP: controllers, middleware, JWT, validação, Swagger. | `OrdersController`, `Program.cs`, filters. |
 
-This keeps business logic testable without a database or web framework.
+Isso mantém a lógica de negócio testável sem banco de dados ou framework web.
 
 ---
 
-## Frontend Architecture
+## Arquitetura do Frontend
 
-- **Framework:** Angular 19 with standalone components (no `NgModule` boilerplate).
-- **State:** Angular **signals** for local/component state and a lightweight `AuthStore` for session state.
-- **Structure:**
+- **Framework:** Angular 19 com componentes standalone (sem boilerplate `NgModule`).
+- **Estado:** Angular **signals** para estado local/de componente e um `AuthStore` leve para estado de sessão.
+- **Estrutura:**
   ```
   src/app/
     core/         # http, auth guard, interceptors, models
-    features/     # customers/, orders/, invoices/ ... (one module per domain)
-    shared/       # reusable UI (tables, dialogs, forms)
+    features/     # customers/, orders/, invoices/ ... (um módulo por domínio)
+    shared/       # UI reutilizável (tables, dialogs, forms)
     layout/       # shell, sidebar, navbar
   ```
-- **HTTP:** A typed `ApiService` wraps `HttpClient`; a JWT **interceptor** attaches the bearer token and a **refresh interceptor** retries on 401.
-- **Routing:** Lazy-loaded feature modules with route-level `canActivate` guards checking permissions.
-- **UI:** Angular Material components + SCSS theming (light/dark via CSS variables).
+- **HTTP:** Um `ApiService` tipado envolve `HttpClient`; um interceptor **JWT** anexa o bearer token e um **refresh interceptor** tenta novamente em 401.
+- **Roteamento:** Módulos de funcionalidade com lazy-loading com guards `canActivate` em nível de rota verificando permissões.
+- **UI:** Componentes Angular Material + theming SCSS (claro/escuro via variáveis CSS).
 
 ---
 
-## Backend Architecture
+## Arquitetura do Backend
 
-- **Host:** ASP.NET Core 9 minimal-hosting model (`WebApplication`).
-- **Pattern:** **CQRS-lite** via **MediatR** — controllers send commands/queries; handlers contain use-case logic.
-- **Validation:** **FluentValidation** pipelines validate incoming commands before handlers run.
-- **Mapping:** **AutoMapper** profiles map entities ↔ DTOs.
-- **Persistence:** **EF Core 9** with a unit-of-work `DbContext`; repositories abstract data access.
-- **DI:** All services registered in `Program.cs`; interfaces resolved from Infrastructure.
-- **Cross-cutting:** Middleware handles exception translation, correlation IDs, and request logging.
-
----
-
-## Database Architecture
-
-- **Provider:** SQL Server via EF Core `UseSqlServer`.
-- **Migrations:** Code First; `EMS.Infrastructure` owns the migration assemblies.
-- **Unit of Work:** `SaveChangesAsync` commits a transaction per request.
-- **Concurrency:** Row-version (`byte[] Version`) optimistic concurrency on key entities.
-- **Soft delete:** global EF query filter on `IsDeleted` for business entities.
-- **Audit:** application-level writes to `AuditLogs` (not SQL triggers) for portability.
+- **Host:** ASP.NET Core 9 modelo de hospedagem minimal (`WebApplication`).
+- **Padrão:** **CQRS-lite** via **MediatR** — controllers enviam commands/queries; handlers contêm a lógica de caso de uso.
+- **Validação:** Pipelines **FluentValidation** validam commands de entrada antes dos handlers executarem.
+- **Mapeamento:** Perfis **AutoMapper** mapeiam entidades ↔ DTOs.
+- **Persistência:** **EF Core 9** com um `DbContext` unit-of-work; repositórios abstraem acesso a dados.
+- **DI:** Todos os serviços registrados em `Program.cs`; interfaces resolvidas de Infrastructure.
+- **Cross-cutting:** Middleware trata tradução de exceções, IDs de correlação e logging de requisição.
 
 ---
 
-## Authentication / Authorization Flow
+## Arquitetura do Banco de Dados
 
-1. Client `POST /v1/auth/login` with email/password.
-2. API verifies password hash, then issues a **short-lived JWT** (access token, 60 min) and a **refresh token** (7 days, stored hashed in `User`/token store).
-3. Client stores tokens (preferably in memory + secure cookie for refresh).
-4. Every API call sends `Authorization: Bearer <jwt>`.
-5. On `401`, the refresh interceptor calls `/v1/auth/refresh` to obtain a new pair (refresh token is rotated).
-6. **Authorization** uses ASP.NET Core policies: claims carry `role` and `permission`; handlers check `PermissionRequirement` (e.g., `Orders.Create`).
+- **Provedor:** SQL Server via EF Core `UseSqlServer`.
+- **Migrações:** Code First; `EMS.Infrastructure` possui as assembles de migração.
+- **Unit of Work:** `SaveChangesAsync` comita uma transação por requisição.
+- **Concorrência:** Row-version (`byte[] Version`) concorrência otimista em entidades chave.
+- **Exclusão suave:** filtro de query EF global em `IsDeleted` para entidades de negócio.
+- **Auditoria:** escritas em nível de aplicação para `AuditLogs` (não triggers SQL) para portabilidade.
+
+---
+
+## Fluxo de Autenticação / Autorização
+
+1. Cliente `POST /v1/auth/login` com email/senha.
+2. API verifica hash da senha, então emite um **JWT de vida curta** (access token, 60 min) e um **refresh token** (7 dias, armazenado hasheado em `User`/token store).
+3. Cliente armazena tokens (preferencialmente em memória + cookie seguro para refresh).
+4. Cada chamada de API envia `Authorization: Bearer <jwt>`.
+5. Em `401`, o refresh interceptor chama `/v1/auth/refresh` para obter um novo par (refresh token é rotacionado).
+6. **Autorização** usa policies ASP.NET Core: claims carregam `role` e `permission`; handlers verificam `PermissionRequirement` (ex., `Orders.Create`).
 
 ```
 Login ─▶ validate ─▶ issue JWT + refresh
@@ -131,9 +131,9 @@ Request ─▶ [Auth Middleware] ─▶ validate JWT signature/exp
 
 ---
 
-## Data Flow
+## Fluxo de Dados
 
-**Create Order example:**
+**Exemplo Criar Pedido:**
 
 ```
 UI (form) ─▶ ApiService.post('/orders', dto)
@@ -159,79 +159,79 @@ UI → navigate to order detail, show toast
 
 ---
 
-## API Versioning Strategy
+## Estratégia de Versionamento da API
 
-- URL-based versioning: `/api/v1/...`, `/api/v2/...`.
-- New backwards-incompatible changes go to a new `v{N+1}` route group; old versions are supported for at least one major release.
-- OpenAPI documents are generated per version; Swagger UI lists them.
-- Deprecations are announced in the CHANGELOG and via an `Api-Deprecated` response header.
-
----
-
-## Error Handling Strategy
-
-- Exceptions are caught by a central **exception middleware** that maps them to consistent JSON envelopes (see API docs).
-- Domain rule violations throw typed exceptions (`ValidationException`, `NotFoundException`, `ConflictException`) mapped to `400/404/409`.
-- Unhandled exceptions return `500` with a `traceId` (correlation ID) for support lookup; details are not leaked to clients.
-- Validation errors aggregate field-level messages.
+- Versionamento por URL: `/api/v1/...`, `/api/v2/...`.
+- Novas alterações incompatíveis com versões anteriores vão para um novo grupo de rota `v{N+1}`; versões antigas são suportadas por pelo menos um release major.
+- Documentos OpenAPI são gerados por versão; Swagger UI as lista.
+- Depreciações são anunciadas no CHANGELOG e via um cabeçalho de resposta `Api-Deprecated`.
 
 ---
 
-## Logging Strategy
+## Estratégia de Tratamento de Erros
 
-- **Serilog** with structured logging; sinks: console (dev) and file/Seq (prod).
-- Every request logs method, path, status, duration, and correlation ID.
-- Sensitive data (passwords, tokens) is never logged.
-- Log levels: `Information` default; `Warning` for auth failures; `Error` for unhandled exceptions.
-- Correlation ID flows from request header through all layers and into the log context.
-
----
-
-## Caching Strategy
-
-- **Dashboard aggregates** cached in-memory (IMemoryCache) with a 5-minute sliding window; invalidated on relevant writes.
-- **Static reference data** (categories, permissions) cached for the session.
-- **HTTP caching:** `Cache-Control` on GET list endpoints where data is non-sensitive.
-- No distributed cache required for single-node; Redis is the recommended add-on when scaling out (see Scalability).
+- Exceções são capturadas por um **middleware de exceção central** que as mapeia para envelopes JSON consistentes (consulte docs da API).
+- Violações de regra de domínio lançam exceções tipadas (`ValidationException`, `NotFoundException`, `ConflictException`) mapeadas para `400/404/409`.
+- Exceções não tratadas retornam `500` com um `traceId` (ID de correlação) para busca de suporte; detalhes não são vazados para clientes.
+- Erros de validação agregam mensagens em nível de campo.
 
 ---
 
-## Security Considerations
+## Estratégia de Logging
 
-- **Transport:** HTTPS only; HSTS enabled in production.
-- **Auth:** JWT with short lifetime; refresh token rotation and revocation list.
-- **Passwords:** strong hashing (Argon2id / BCrypt), enforced password policy, account lockout after N failed attempts.
-- **Authorization:** permission-based policies, least privilege by default.
-- **CORS:** strictly allow-listed origins (no wildcards in production).
-- **Input:** model validation + parameterized queries (EF Core) prevent injection.
-- **Secrets:** `Jwt:Key` and connection strings via user-secrets/env vars, never committed.
-- **Audit:** immutable logs of auth and data mutations for forensics.
-- **File uploads:** size limits (10 MB), type allow-list, stored outside web root.
+- **Serilog** com logging estruturado; sinks: console (dev) e arquivo/Seq (prod).
+- Cada requisição registra método, caminho, status, duração e ID de correlação.
+- Dados sensíveis (senhas, tokens) nunca são registrados.
+- Níveis de log: `Information` padrão; `Warning` para falhas de auth; `Error` para exceções não tratadas.
+- ID de correlação flui do cabeçalho de requisição através de todas as camadas e para o contexto de log.
 
 ---
 
-## Scalability Considerations
+## Estratégia de Cache
 
-- **Stateless API:** no server-side session state → horizontal scaling behind a load balancer.
-- **Database:** read replicas can serve reporting; connection pooling via EF Core.
-- **Caching:** add Redis for shared cache across API nodes.
-- **Background jobs:** long-running tasks (report generation, email, balance reconciliation) moved to a hosted service / queue (e.g., Hangfire, Azure Queue).
-- **Frontend:** static build served via CDN/Nginx; cache-busting hashes.
-- **Bottlenecks:** inventory balance recomputation is the main write contention; mitigated by denormalized columns + nightly reconciliation.
+- **Agregados do painel** cacheados em memória (IMemoryCache) com uma janela deslizante de 5 minutos; invalidados em escritas relevantes.
+- **Dados de referência estáticos** (categorias, permissões) cacheados para a sessão.
+- **Cache HTTP:** `Cache-Control` em endpoints GET de lista onde os dados não são sensíveis.
+- Nenhum cache distribuído necessário para nó único; Redis é o add-on recomendado ao escalar horizontalmente (consulte Escalabilidade).
 
 ---
 
-## Technology Decisions
+## Considerações de Segurança
 
-| Decision | Rationale |
+- **Transporte:** HTTPS apenas; HSTS habilitado em produção.
+- **Auth:** JWT com vida curta; rotação de refresh token e lista de revogação.
+- **Senhas:** hash forte (Argon2id / BCrypt), política de senha forçada, bloqueio de conta após N tentativas falhas.
+- **Autorização:** policies baseadas em permissão, menor privilégio por padrão.
+- **CORS:** origens estritamente permitidas (sem wildcards em produção).
+- **Entrada:** validação de modelo + queries parametrizadas (EF Core) previnem injeção.
+- **Segredos:** `Jwt:Key` e strings de conexão via user-secrets/env vars, nunca comitados.
+- **Auditoria:** logs imutáveis de auth e mutações de dados para forense.
+- **Uploads de arquivo:** limites de tamanho (10 MB), lista de permissão de tipos, armazenados fora da raiz web.
+
+---
+
+## Considerações de Escalabilidade
+
+- **API com estado:** nenhum estado de sessão server-side → escalonamento horizontal atrás de um load balancer.
+- **Banco de dados:** réplicas de leitura podem servir relatórios; connection pooling via EF Core.
+- **Cache:** adicione Redis para cache compartilhado entre nós de API.
+- **Jobs em background:** tarefas longas (geração de relatórios, email, reconciliação de saldo) movidas para um hosted service / fila (ex., Hangfire, Azure Queue).
+- **Frontend:** build estático servido via CDN/Nginx; hashes de cache-busting.
+- **Gargalos:** recomputação de saldo de estoque é a principal contenção de escrita; mitigada por colunas desnormalizadas + reconciliação noturna.
+
+---
+
+## Decisões Tecnológicas
+
+| Decisão | Rationale |
 | --- | --- |
-| **.NET 9 / ASP.NET Core** | High performance, mature ecosystem, first-class EF Core and JWT support. |
-| **Angular 19** | Strong typing, signals, enterprise-grade tooling, excellent material UI. |
-| **Clean Architecture** | Testability, framework independence, clear boundaries. |
-| **MediatR + CQRS-lite** | Decouples controllers from use cases; pipeline behaviors for validation/logging. |
-| **EF Core 9** | Productive ORM with migrations, SQL Server support, change tracking. |
-| **SQL Server** | Reliable RDBMS with strong tooling; LocalDB simplifies dev. |
-| **JWT + refresh** | Stateless auth suitable for SPA + scaling; refresh rotation limits risk. |
-| **Serilog** | Structured logs queryable by correlation ID; easy sink swapping. |
-| **FluentValidation** | Declarative, testable validation separate from handlers. |
-| **Docker** | Reproducible environments across dev/CI/prod. |
+| **.NET 9 / ASP.NET Core** | Alta performance, ecossistema maduro, suporte de primeira classe a EF Core e JWT. |
+| **Angular 19** | Tipagem forte, signals, ferramentas enterprise-grade, UI material excelente. |
+| **Arquitetura Limpa** | Testabilidade, independência de framework, limites claros. |
+| **MediatR + CQRS-lite** | Desacopla controllers de casos de uso; pipeline behaviors para validação/logging. |
+| **EF Core 9** | ORM produtivo com migrações, suporte a SQL Server, change tracking. |
+| **SQL Server** | RDBMS confiável com ferramentas fortes; LocalDB simplifica dev. |
+| **JWT + refresh** | Auth sem estado adequado para SPA + escalonamento; rotação de refresh limita risco. |
+| **Serilog** | Logs estruturados consultáveis por ID de correlação; troca fácil de sinks. |
+| **FluentValidation** | Validação declarativa, testável, separada de handlers. |
+| **Docker** | Ambientes reproduzíveis entre dev/CI/prod. |

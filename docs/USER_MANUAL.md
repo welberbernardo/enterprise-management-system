@@ -1,335 +1,335 @@
-# User Manual
+# Manual do Usuário
 
-This manual explains how to use the **Enterprise Management System (EMS)** from a day-to-day operator perspective. It assumes the system has already been installed (see [INSTALL.md](../docs/INSTALL.md)) and that you have a user account.
+Este manual explica como usar o **Sistema de Gestão Empresarial (EMS)** da perspectiva de um operador do dia a dia. Ele assume que o sistema já foi instalado (consulte [INSTALL.md](../docs/INSTALL.md)) e que você possui uma conta de usuário.
 
 ---
 
-## Table of Contents
+## Índice
 
-1. [Introduction](#1-introduction)
-2. [Getting Started](#2-getting-started)
-3. [Dashboard](#3-dashboard)
-4. [User Management](#4-user-management)
-5. [Customer Management](#5-customer-management)
-6. [Supplier Management](#6-supplier-management)
-7. [Product Management](#7-product-management)
-8. [Order Management](#8-order-management)
-9. [Invoice Management](#9-invoice-management)
-10. [Inventory Management](#10-inventory-management)
-11. [Finance](#11-finance)
-12. [Reports](#12-reports)
-13. [Settings](#13-settings)
-14. [Audit Logs](#14-audit-logs)
-15. [Best Practices](#15-best-practices)
+1. [Introdução](#1-introdução)
+2. [Primeiros Passos](#2-primeiros-passos)
+3. [Painel](#3-painel)
+4. [Gerenciamento de Usuários](#4-gerenciamento-de-usuários)
+5. [Gerenciamento de Clientes](#5-gerenciamento-de-clientes)
+6. [Gerenciamento de Fornecedores](#6-gerenciamento-de-fornecedores)
+7. [Gerenciamento de Produtos](#7-gerenciamento-de-produtos)
+8. [Gerenciamento de Pedidos](#8-gerenciamento-de-pedidos)
+9. [Gerenciamento de Faturas](#9-gerenciamento-de-faturas)
+10. [Gerenciamento de Estoque](#10-gerenciamento-de-estoque)
+11. [Finanças](#11-finanças)
+12. [Relatórios](#12-relatórios)
+13. [Configurações](#13-configurações)
+14. [Logs de Auditoria](#14-logs-de-auditoria)
+15. [Melhores Práticas](#15-melhores-práticas)
 16. [FAQ](#16-faq)
 
 ---
 
-## 1. Introduction
+## 1. Introdução
 
-EMS centralizes your business operations. Depending on your assigned **role**, you will see a subset of the modules described below. Administrators see everything; cashiers may only see orders and invoices; warehouse staff may only see inventory.
+O EMS centraliza suas operações empresariais. Dependendo da sua **função** atribuída, você verá um subconjunto dos módulos descritos abaixo. Administradores veem tudo; caixas podem ver apenas pedidos e faturas; funcionários do armazém podem ver apenas o estoque.
 
-> **Screenshot placeholder:** `docs/assets/login.png` — the login screen with email/password and "Forgot password?" link.
+> **Espaço reservado para screenshot:** `docs/assets/login.png` — a tela de login com email/senha e link "Esqueceu a senha?".
 
 ---
 
-## 2. Getting Started
+## 2. Primeiros Passos
 
 ### Login
 
-1. Open the application URL (e.g., `http://localhost:4200`).
-2. Enter your **email** and **password**.
-3. Click **Sign in**.
+1. Abra a URL do aplicativo (ex., `http://localhost:4200`).
+2. Insira seu **email** e **senha**.
+3. Clique em **Entrar**.
 
-On success you are redirected to the **Dashboard**.
+Após o sucesso você é redirecionado para o **Painel**.
 
-### First Login
+### Primeiro Login
 
-The default administrator account is created during seeding:
+A conta de administrador padrão é criada durante o seed:
 
 ```
 Email:    admin@ems.local
-Password: Admin@12345
+Senha:    Admin@12345
 ```
 
-> Change this password immediately after first login (see below).
+> Altere esta senha imediatamente após o primeiro login (veja abaixo).
 
-### Changing Your Password
+### Alterando Sua Senha
 
-1. Click your avatar (top-right) → **Profile**.
-2. Select the **Security** tab.
-3. Enter the **current password**, a **new password**, and confirm it.
-4. Click **Save**.
+1. Clique no seu avatar (canto superior direito) → **Perfil**.
+2. Selecione a aba **Segurança**.
+3. Insira a **senha atual**, uma **nova senha** e confirme-a.
+4. Clique em **Salvar**.
 
-Password policy: minimum 12 characters, at least one uppercase, one lowercase, one digit, and one special character.
+Política de senha: mínimo de 12 caracteres, pelo menos uma letra maiúscula, uma letra minúscula, um dígito e um caractere especial.
 
-> **Screenshot placeholder:** `docs/assets/profile-security.png` — the profile/security tab with password fields.
-
----
-
-## 3. Dashboard
-
-The dashboard is your landing page and shows a real-time overview of the business.
-
-### Overview
-
-- **KPI tiles:** Total customers, open orders, inventory value, outstanding receivables, cash on hand.
-- **Quick actions:** Create order, add customer, record stock entry.
-
-### Statistics
-
-Tiles update live from cached aggregates. Hovering a tile shows the period-over-period delta.
-
-### Charts
-
-- **Sales trend** (line chart, last 30 days).
-- **Top products** (bar chart).
-- **Cash flow** (area chart, inflow vs. outflow).
-- **Orders by status** (donut chart).
-
-### Notifications
-
-A bell icon shows alerts: low-stock warnings, overdue invoices, failed login attempts. Click to expand and mark as read.
-
-> **Screenshot placeholder:** `docs/assets/dashboard.png` — dashboard with KPI tiles, charts, and notification bell.
+> **Espaço reservado para screenshot:** `docs/assets/profile-security.png` — a aba perfil/segurança com campos de senha.
 
 ---
 
-## 4. User Management
+## 3. Painel
 
-*Requires the `UserManagement` permission.*
+O painel é sua página inicial e mostra uma visão geral em tempo real do negócio.
 
-### Users
+### Visão Geral
 
-1. Go to **Administration → Users**.
-2. Click **New User**.
-3. Fill in: name, email, phone, assigned role, status (active/disabled).
-4. Click **Save**. A temporary password is emailed (or shown once).
-5. To disable a user, open the row menu → **Disable**.
+- **Tiles de KPI:** Total de clientes, pedidos abertos, valor do estoque, recebíveis pendentes, dinheiro em caixa.
+- **Ações rápidas:** Criar pedido, adicionar cliente, registrar entrada de estoque.
 
-### Roles
+### Estatísticas
 
-1. Go to **Administration → Roles**.
-2. Click **New Role**, provide a name and description.
-3. Toggle the **permissions** the role should grant.
-4. Click **Save**.
+Os tiles são atualizados ao vivo a partir de agregados em cache. Passar o mouse sobre um tile mostra o delta período contra período.
 
-### Permissions
+### Gráficos
 
-Permissions are granular flags (e.g., `Orders.Create`, `Invoices.View`). They are grouped by module and assigned to roles. A user's effective permissions are the union of all roles assigned to them.
+- **Tendência de vendas** (gráfico de linha, últimos 30 dias).
+- **Top produtos** (gráfico de barras).
+- **Fluxo de caixa** (gráfico de área, entradas vs. saídas).
+- **Pedidos por status** (gráfico de rosca).
 
-> **Screenshot placeholder:** `docs/assets/users.png` — user list with role assignment dropdown.
+### Notificações
 
----
+Um ícone de sino mostra alertas: avisos de estoque baixo, faturas vencidas, tentativas de login falhas. Clique para expandir e marcar como lidas.
 
-## 5. Customer Management
-
-### Customers
-
-1. Go to **Customers → All Customers**.
-2. Click **New Customer**.
-3. Enter company name, tax ID, billing/shipping address, credit limit, and payment terms.
-4. Click **Save**.
-
-Each customer shows a **balance** (sum of unpaid invoices) and **lifetime value**.
-
-### Contacts
-
-Open a customer, switch to the **Contacts** tab, and add one or more contacts (name, email, phone, role). Mark one as primary.
-
-> **Screenshot placeholder:** `docs/assets/customers.png` — customer detail with contacts tab.
+> **Espaço reservado para screenshot:** `docs/assets/dashboard.png` — painel com tiles de KPI, gráficos e sino de notificações.
 
 ---
 
-## 6. Supplier Management
+## 4. Gerenciamento de Usuários
 
-1. Go to **Suppliers → All Suppliers**.
-2. Click **New Supplier** and enter the supplier's legal name, tax ID, address, and payment terms.
-3. Add contacts in the **Contacts** tab.
-4. Save.
+*Requer a permissão `UserManagement`.*
 
-Suppliers are referenced when recording **stock entries** (purchase receipts).
+### Usuários
 
----
+1. Vá para **Administração → Usuários**.
+2. Clique em **Novo Usuário**.
+3. Preencha: nome, email, telefone, função atribuída, status (ativo/desativado).
+4. Clique em **Salvar**. Uma senha temporária é enviada por email (ou mostrada uma vez).
+5. Para desativar um usuário, abra o menu da linha → **Desativar**.
 
-## 7. Product Management
+### Funções
 
-### Categories
+1. Vá para **Administração → Funções**.
+2. Clique em **Nova Função**, forneça um nome e descrição.
+3. Alterne as **permissões** que a função deve conceder.
+4. Clique em **Salvar**.
 
-1. Go to **Products → Categories**.
-2. Click **New Category**, enter a name and optional parent category.
-3. Save. Categories can be nested.
+### Permissões
 
-### Products
+Permissões são flags granulares (ex., `Orders.Create`, `Invoices.View`). Elas são agrupadas por módulo e atribuídas a funções. As permissões efetivas de um usuário são a união de todas as funções atribuídas a ele.
 
-1. Go to **Products → All Products**.
-2. Click **New Product**.
-3. Fill in: SKU, name, description, category, unit of measure, purchase price, sale price, reorder level, and current stock.
-4. Save.
-
-The product list supports search, filtering by category, and CSV export.
-
-> **Screenshot placeholder:** `docs/assets/products.png` — product grid with filters and stock badges.
+> **Espaço reservado para screenshot:** `docs/assets/users.png` — lista de usuários com dropdown de atribuição de função.
 
 ---
 
-## 8. Order Management
+## 5. Gerenciamento de Clientes
 
-### Creating an Order
+### Clientes
 
-1. Go to **Orders → New Order**.
-2. Select a **customer**.
-3. Add **line items**: search a product, set quantity and unit price (auto-filled from product).
-4. The order total updates automatically, including any applicable tax.
-5. Click **Save** (draft) or **Save & Confirm**.
+1. Vá para **Clientes → Todos os Clientes**.
+2. Clique em **Novo Cliente**.
+3. Insira nome da empresa, ID fiscal, endereço de cobrança/entrega, limite de crédito e condições de pagamento.
+4. Clique em **Salvar**.
 
-### Order Statuses
+Cada cliente mostra um **saldo** (soma de faturas não pagas) e **valor vitalício**.
 
-| Status | Meaning |
+### Contatos
+
+Abra um cliente, mude para a aba **Contatos** e adicione um ou mais contatos (nome, email, telefone, função). Marque um como principal.
+
+> **Espaço reservado para screenshot:** `docs/assets/customers.png` — detalhe do cliente com aba de contatos.
+
+---
+
+## 6. Gerenciamento de Fornecedores
+
+1. Vá para **Fornecedores → Todos os Fornecedores**.
+2. Clique em **Novo Fornecedor** e insira o nome legal, ID fiscal, endereço e condições de pagamento.
+3. Adicione contatos na aba **Contatos**.
+4. Salve.
+
+Fornecedores são referenciados ao registrar **entradas de estoque** (recibos de compra).
+
+---
+
+## 7. Gerenciamento de Produtos
+
+### Categorias
+
+1. Vá para **Produtos → Categorias**.
+2. Clique em **Nova Categoria**, insira um nome e categoria pai opcional.
+3. Salve. Categorias podem ser aninhadas.
+
+### Produtos
+
+1. Vá para **Produtos → Todos os Produtos**.
+2. Clique em **Novo Produto**.
+3. Preencha: SKU, nome, descrição, categoria, unidade de medida, preço de compra, preço de venda, nível de reposição e estoque atual.
+4. Salve.
+
+A lista de produtos suporta busca, filtragem por categoria e exportação CSV.
+
+> **Espaço reservado para screenshot:** `docs/assets/products.png` — grade de produtos com filtros e badges de estoque.
+
+---
+
+## 8. Gerenciamento de Pedidos
+
+### Criando um Pedido
+
+1. Vá para **Pedidos → Novo Pedido**.
+2. Selecione um **cliente**.
+3. Adicione **itens de linha**: busque um produto, defina quantidade e preço unitário (preenchido automaticamente pelo produto).
+4. O total do pedido é atualizado automaticamente, incluindo qualquer imposto aplicável.
+5. Clique em **Salvar** (rascunho) ou **Salvar e Confirmar**.
+
+### Status do Pedido
+
+| Status | Significado |
 | --- | --- |
-| **Draft** | Created, not yet confirmed. Editable. |
-| **Confirmed** | Accepted; inventory is reserved. |
-| **Processing** | Being fulfilled. |
-| **Completed** | Delivered/closed. |
-| **Cancelled** | Voided. No financial impact. |
+| **Rascunho** | Criado, ainda não confirmado. Editável. |
+| **Confirmado** | Aceito; estoque é reservado. |
+| **Processando** | Sendo atendido. |
+| **Concluído** | Entregue/fechado. |
+| **Cancelado** | Anulado. Sem impacto financeiro. |
 
-### Printing
+### Impressão
 
-Open an order and click **Print** to open a print-ready view. Use the browser's print dialog to save as PDF or send to a printer.
+Abra um pedido e clique em **Imprimir** para abrir uma visualização pronta para impressão. Use o diálogo de impressão do navegador para salvar como PDF ou enviar para uma impressora.
 
-> **Screenshot placeholder:** `docs/assets/orders.png` — order detail with line items and status badge.
-
----
-
-## 9. Invoice Management
-
-### Creating an Invoice
-
-1. Go to **Invoices → New Invoice**.
-2. Link it to an existing **order** (recommended) or create standalone.
-3. Verify line items, due date, and tax.
-4. Click **Issue**. The invoice number is assigned automatically (format `INV-YYYY-00001`).
-
-### PDF Generation
-
-Open the issued invoice and click **Download PDF**. EMS renders a professional invoice (company header, line items, totals, notes) using the server-side PDF generator.
-
-### Recording Payments
-
-Open the invoice → **Record Payment**, enter amount, method (cash/transfer/card), and date. Partially paid invoices show a remaining balance.
-
-> **Screenshot placeholder:** `docs/assets/invoice.png` — invoice preview with Download PDF and Record Payment buttons.
+> **Espaço reservado para screenshot:** `docs/assets/orders.png` — detalhe do pedido com itens de linha e badge de status.
 
 ---
 
-## 10. Inventory Management
+## 9. Gerenciamento de Faturas
 
-### Stock Entry (inbound)
+### Criando uma Fatura
 
-1. Go to **Inventory → Stock Entry**.
-2. Select a **supplier** and optionally a linked purchase order.
-3. Add products and received quantities.
-4. Submit. Stock levels increase and a movement record is created.
+1. Vá para **Faturas → Nova Fatura**.
+2. Vincule-a a um **pedido** existente (recomendado) ou crie independente.
+3. Verifique itens de linha, data de vencimento e imposto.
+4. Clique em **Emitir**. O número da fatura é atribuído automaticamente (formato `INV-YYYY-00001`).
 
-### Stock Exit (outbound)
+### Geração de PDF
 
-1. Go to **Inventory → Stock Exit**.
-2. Select a reason (sale, adjustment, transfer, damage).
-3. Add products and quantities.
-4. Submit. Stock decreases.
+Abra a fatura emitida e clique em **Baixar PDF**. O EMS renderiza uma fatura profissional (cabeçalho da empresa, itens de linha, totais, observações) usando o gerador de PDF server-side.
 
-### History
+### Registrando Pagamentos
 
-**Inventory → History** shows every movement with: date, product, type (entry/exit), quantity, reference (order/invoice), and user. Exportable to CSV.
+Abra a fatura → **Registrar Pagamento**, insira valor, método (dinheiro/transferência/cartão) e data. Faturas parcialmente pagas mostram um saldo restante.
 
-> Low-stock products (below reorder level) trigger dashboard notifications.
+> **Espaço reservado para screenshot:** `docs/assets/invoice.png` — pré-visualização de fatura com botões Baixar PDF e Registrar Pagamento.
 
 ---
 
-## 11. Finance
+## 10. Gerenciamento de Estoque
 
-### Accounts Payable
+### Entrada de Estoque (entrada)
 
-Lists supplier invoices/bills not yet paid, with due dates and aging buckets (0–30, 31–60, 61–90+ days).
+1. Vá para **Estoque → Entrada de Estoque**.
+2. Selecione um **fornecedor** e opcionalmente um pedido de compra vinculado.
+3. Adicione produtos e quantidades recebidas.
+4. Envie. Os níveis de estoque aumentam e um registro de movimentação é criado.
 
-### Accounts Receivable
+### Saída de Estoque (saída)
 
-Lists customer invoices with status (unpaid, partially paid, overdue) and aging. Click an invoice to record a payment.
+1. Vá para **Estoque → Saída de Estoque**.
+2. Selecione um motivo (venda, ajuste, transferência, dano).
+3. Adicione produtos e quantidades.
+4. Envie. O estoque diminui.
 
-### Cash Flow
+### Histórico
 
-**Finance → Cash Flow** shows inflows (receipts) and outflows (payments) over a selectable period, with a running balance and net position.
+**Estoque → Histórico** mostra todas as movimentações com: data, produto, tipo (entrada/saída), quantidade, referência (pedido/fatura) e usuário. Exportável para CSV.
+
+> Produtos com estoque baixo (abaixo do nível de reposição) disparam notificações no painel.
 
 ---
 
-## 12. Reports
+## 11. Finanças
 
-All reports are under **Reports** and support date-range filters and export (PDF/Excel/CSV).
+### Contas a Pagar
 
-| Report | Description |
+Lista faturas/contas de fornecedores não pagas, com datas de vencimento e faixas de vencimento (0–30, 31–60, 61–90+ dias).
+
+### Contas a Receber
+
+Lista faturas de clientes com status (não paga, parcialmente paga, vencida) e vencimento. Clique em uma fatura para registrar um pagamento.
+
+### Fluxo de Caixa
+
+**Finanças → Fluxo de Caixa** mostra entradas (recebimentos) e saídas (pagamentos) ao longo de um período selecionável, com saldo de execução e posição líquida.
+
+---
+
+## 12. Relatórios
+
+Todos os relatórios estão em **Relatórios** e suportam filtros de intervalo de datas e exportação (PDF/Excel/CSV).
+
+| Relatório | Descrição |
 | --- | --- |
-| **Sales Report** | Revenue by period, by customer, by product. |
-| **Inventory Report** | Stock levels, valuation, slow-moving items. |
-| **Customer Report** | Top customers by revenue, balances. |
-| **Product Report** | Best sellers, margin analysis. |
-| **Financial Report** | Profit & loss summary, cash position. |
+| **Relatório de Vendas** | Receita por período, por cliente, por produto. |
+| **Relatório de Estoque** | Níveis de estoque, valoração, itens de movimento lento. |
+| **Relatório de Clientes** | Top clientes por receita, saldos. |
+| **Relatório de Produtos** | Mais vendidos, análise de margem. |
+| **Relatório Financeiro** | Resumo de lucros e perdas, posição de caixa. |
 
-> **Screenshot placeholder:** `docs/assets/reports.png` — report builder with filters and export menu.
-
----
-
-## 13. Settings
-
-### Company Info
-
-**Settings → Company** stores your legal name, tax ID, address, logo, and bank details. This information appears on generated invoices and reports.
-
-### Preferences
-
-Configure default tax rate, currency, date format, and number format.
-
-### Theme
-
-Toggle **Light / Dark** mode from the user menu or **Settings → Appearance**. The choice is saved per user.
+> **Espaço reservado para screenshot:** `docs/assets/reports.png` — construtor de relatórios com filtros e menu de exportação.
 
 ---
 
-## 14. Audit Logs
+## 13. Configurações
 
-*Requires the `Audit.View` permission.*
+### Informações da Empresa
 
-**Administration → Audit Logs** records security- and data-relevant events: logins (success/failure), permission changes, record creation/updates/deletes, and configuration changes. Each entry shows timestamp, user, action, entity, and IP address. Use the filters to investigate incidents.
+**Configurações → Empresa** armazena o nome legal, ID fiscal, endereço, logo e detalhes bancários. Esta informação aparece nas faturas e relatórios gerados.
+
+### Preferências
+
+Configure taxa de imposto padrão, moeda, formato de data e formato de número.
+
+### Tema
+
+Alterne o modo **Claro / Escuro** no menu do usuário ou em **Configurações → Aparência**. A escolha é salva por usuário.
 
 ---
 
-## 15. Best Practices
+## 14. Logs de Auditoria
 
-- **Change the default admin password** before going live.
-- **Assign least-privilege roles** — don't make everyone an admin.
-- **Record stock movements promptly** to keep inventory accurate.
-- **Issue invoices from orders** to avoid mismatched data.
-- **Reconcile Accounts Receivable/Payable** weekly.
-- **Review Audit Logs** periodically for suspicious activity.
-- **Back up the database** daily (see [DATABASE.md](../docs/DATABASE.md)).
+*Requer a permissão `Audit.View`.*
+
+**Administração → Logs de Auditoria** registra eventos relevantes de segurança e dados: logins (sucesso/falha), alterações de permissão, criação/atualização/exclusão de registros e alterações de configuração. Cada entrada mostra data/hora, usuário, ação, entidade e endereço IP. Use os filtros para investigar incidentes.
+
+---
+
+## 15. Melhores Práticas
+
+- **Altere a senha de admin padrão** antes de colocar em produção.
+- **Atribua funções de menor privilégio** — não torne todos administradores.
+- **Registre movimentações de estoque prontamente** para manter a precisão do inventário.
+- **Emita faturas a partir de pedidos** para evitar dados incompatíveis.
+- **Reconcilie Contas a Receber/Pagar** semanalmente.
+- **Revise os Logs de Auditoria** periodicamente por atividade suspeita.
+- **Faça backup do banco de dados** diariamente (consulte [DATABASE.md](../docs/DATABASE.md)).
 
 ---
 
 ## 16. FAQ
 
-**Q: I forgot my password.**  
-A: Click **Forgot password?** on the login screen and follow the reset email. Admins can also reset it from User Management.
+**P: Esqueci minha senha.**  
+R: Clique em **Esqueceu a senha?** na tela de login e siga o email de redefinição. Administradores também podem redefini-la no Gerenciamento de Usuários.
 
-**Q: Why can't I see a module?**  
-A: Your role lacks the required permission. Contact an administrator.
+**P: Por que não consigo ver um módulo?**  
+R: Sua função carece da permissão necessária. Contate um administrador.
 
-**Q: How do I print an invoice as PDF?**  
-A: Open the invoice and click **Download PDF**.
+**P: Como imprimo uma fatura como PDF?**  
+R: Abra a fatura e clique em **Baixar PDF**.
 
-**Q: Stock shows negative — what happened?**  
-A: A stock exit exceeded on-hand quantity. Review **Inventory → History** to find the movement and correct it with an adjustment.
+**P: O estoque mostra negativo — o que aconteceu?**  
+R: Uma saída de estoque excedeu a quantidade em mãos. Revise **Estoque → Histórico** para encontrar a movimentação e corrigi-la com um ajuste.
 
-**Q: Can I export data?**  
-A: Yes. Lists and reports support CSV/Excel/PDF export.
+**P: Posso exportar dados?**  
+R: Sim. Listas e relatórios suportam exportação CSV/Excel/PDF.
 
-**Q: The dashboard charts are empty.**  
-A: There may be no data for the selected period, or the aggregate cache hasn't refreshed. Try changing the date range or reloading.
+**P: Os gráficos do painel estão vazios.**  
+R: Pode não haver dados para o período selecionado, ou o cache de agregados não foi atualizado. Tente alterar o intervalo de datas ou recarregar.

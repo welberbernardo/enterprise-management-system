@@ -1,62 +1,62 @@
-# API Documentation
+# Documentação da API
 
-This document describes the **Enterprise Management System (EMS)** REST API. The API is implemented with ASP.NET Core 9 and documented live via Swagger UI (OpenAPI 3).
+Este documento descreve a API REST do **Sistema de Gestão Empresarial (EMS)**. A API é implementada com ASP.NET Core 9 e documentada ao vivo via Swagger UI (OpenAPI 3).
 
 ---
 
-## Table of Contents
+## Índice
 
-- [Introduction](#introduction)
-- [Base URL](#base-url)
-- [Authentication](#authentication)
-- [Error Handling](#error-handling)
-- [Common Response Formats](#common-response-formats)
-- [Pagination, Filtering & Sorting](#pagination-filtering--sorting)
+- [Introdução](#introdução)
+- [URL Base](#url-base)
+- [Autenticação](#autenticação)
+- [Tratamento de Erros](#tratamento-de-erros)
+- [Formatos de Resposta Comuns](#formatos-de-resposta-comuns)
+- [Paginação, Filtros e Ordenação](#paginação-filtros-e-ordenação)
 - [Rate Limiting](#rate-limiting)
-- [File Uploads](#file-uploads)
+- [Uploads de Arquivo](#uploads-de-arquivo)
 - [Swagger UI](#swagger-ui)
-- [Module: Auth](#module-auth)
-- [Module: Users](#module-users)
-- [Module: Roles](#module-roles)
-- [Module: Customers](#module-customers)
-- [Module: Suppliers](#module-suppliers)
-- [Module: Products](#module-products)
-- [Module: Orders](#module-orders)
-- [Module: Invoices](#module-invoices)
-- [Module: Inventory](#module-inventory)
-- [Module: Finance](#module-finance)
-- [Module: Reports](#module-reports)
-- [Module: Audit Logs](#module-audit-logs)
+- [Módulo: Auth](#módulo-auth)
+- [Módulo: Users](#módulo-users)
+- [Módulo: Roles](#módulo-roles)
+- [Módulo: Customers](#módulo-customers)
+- [Módulo: Suppliers](#módulo-suppliers)
+- [Módulo: Products](#módulo-products)
+- [Módulo: Orders](#módulo-orders)
+- [Módulo: Invoices](#módulo-invoices)
+- [Módulo: Inventory](#módulo-inventory)
+- [Módulo: Finance](#módulo-finance)
+- [Módulo: Reports](#módulo-reports)
+- [Módulo: Audit Logs](#módulo-audit-logs)
 
 ---
 
-## Introduction
+## Introdução
 
-The EMS API follows REST conventions. It uses JSON for request and response bodies, returns appropriate HTTP status codes, and requires a **Bearer JWT** for all endpoints except authentication.
+A API do EMS segue convenções REST. Ela usa JSON para corpos de requisição e resposta, retorna códigos HTTP apropriados e requer um **Bearer JWT** para todos os endpoints exceto autenticação.
 
 ---
 
-## Base URL
+## URL Base
 
 ```
 http://localhost:5000/api
 ```
 
-In production, replace with your hosted API base, e.g. `https://api.ems.example.com/api`.
+Em produção, substitua pela sua API hospedada, ex. `https://api.ems.example.com/api`.
 
-All endpoints below are relative to this base URL and are **versioned** under `/v1`.
+Todos os endpoints abaixo são relativos a esta URL base e são **versionados** sob `/v1`.
 
 ---
 
-## Authentication
+## Autenticação
 
-EMS uses **JWT Bearer** tokens plus **refresh tokens**.
+O EMS usa tokens **JWT Bearer** mais **refresh tokens**.
 
 ### Login
 
 `POST /v1/auth/login`
 
-**Request body:**
+**Corpo da requisição:**
 
 ```json
 {
@@ -65,7 +65,7 @@ EMS uses **JWT Bearer** tokens plus **refresh tokens**.
 }
 ```
 
-**Response `200`:**
+**Resposta `200`:**
 
 ```json
 {
@@ -81,15 +81,15 @@ EMS uses **JWT Bearer** tokens plus **refresh tokens**.
 }
 ```
 
-### Using the token
+### Usando o token
 
-Include it in the `Authorization` header of every request:
+Inclua-o no cabeçalho `Authorization` de cada requisição:
 
 ```
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-### Refreshing the token
+### Atualizando o token
 
 `POST /v1/auth/refresh`
 
@@ -100,19 +100,19 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 }
 ```
 
-Returns a new `token` and `refreshToken`. Refresh tokens are single-use and rotated on each refresh.
+Retorna um novo `token` e `refreshToken`. Refresh tokens são de uso único e rotacionados a cada refresh.
 
 ### Logout
 
-`POST /v1/auth/logout` — revokes the current refresh token.
+`POST /v1/auth/logout` — revoga o refresh token atual.
 
 ---
 
-## Error Handling
+## Tratamento de Erros
 
-Errors return a consistent JSON envelope and an appropriate HTTP status code.
+Erros retornam um envelope JSON consistente e um código HTTP apropriado.
 
-**Example `400`:**
+**Exemplo `400`:**
 
 ```json
 {
@@ -126,7 +126,7 @@ Errors return a consistent JSON envelope and an appropriate HTTP status code.
 }
 ```
 
-**Example `401`:**
+**Exemplo `401`:**
 
 ```json
 {
@@ -135,7 +135,7 @@ Errors return a consistent JSON envelope and an appropriate HTTP status code.
 }
 ```
 
-**Example `404`:**
+**Exemplo `404`:**
 
 ```json
 {
@@ -144,7 +144,7 @@ Errors return a consistent JSON envelope and an appropriate HTTP status code.
 }
 ```
 
-**Example `500`:**
+**Exemplo `500`:**
 
 ```json
 {
@@ -154,27 +154,27 @@ Errors return a consistent JSON envelope and an appropriate HTTP status code.
 }
 ```
 
-### Status code summary
+### Resumo de códigos de status
 
-| Code | Meaning |
+| Código | Significado |
 | --- | --- |
-| 200 | Success |
-| 201 | Created |
-| 204 | No Content |
-| 400 | Bad Request / validation error |
-| 401 | Unauthorized |
-| 403 | Forbidden (insufficient permission) |
-| 404 | Not Found |
-| 409 | Conflict (e.g., duplicate) |
-| 422 | Unprocessable Entity |
-| 429 | Too Many Requests |
-| 500 | Internal Server Error |
+| 200 | Sucesso |
+| 201 | Criado |
+| 204 | Sem Conteúdo |
+| 400 | Requisição inválida / erro de validação |
+| 401 | Não autorizado |
+| 403 | Proibido (permissão insuficiente) |
+| 404 | Não encontrado |
+| 409 | Conflito (ex., duplicado) |
+| 422 | Entidade não processável |
+| 429 | Muitas requisições |
+| 500 | Erro interno do servidor |
 
 ---
 
-## Common Response Formats
+## Formatos de Resposta Comuns
 
-A successful collection response is wrapped with pagination metadata:
+Uma resposta de coleção bem-sucedida é encapsulada com metadados de paginação:
 
 ```json
 {
@@ -186,7 +186,7 @@ A successful collection response is wrapped with pagination metadata:
 }
 ```
 
-A single resource response returns the object directly (with `success` envelope in mutation responses):
+Uma resposta de recurso único retorna o objeto diretamente (com envelope `success` em respostas de mutação):
 
 ```json
 {
@@ -197,20 +197,20 @@ A single resource response returns the object directly (with `success` envelope 
 
 ---
 
-## Pagination, Filtering & Sorting
+## Paginação, Filtros e Ordenação
 
-List endpoints accept:
+Endpoints de lista aceitam:
 
-| Query param | Type | Description |
+| Param de query | Tipo | Descrição |
 | --- | --- | --- |
-| `page` | int | 1-based page number (default 1). |
-| `pageSize` | int | Items per page (default 20, max 100). |
-| `sortBy` | string | Column to sort by. |
-| `sortDir` | string | `asc` or `desc` (default `asc`). |
-| `search` | string | Free-text filter. |
-| `from` / `to` | date | Date-range filters where applicable. |
+| `page` | int | Número da página baseado em 1 (padrão 1). |
+| `pageSize` | int | Itens por página (padrão 20, máx 100). |
+| `sortBy` | string | Coluna para ordenar. |
+| `sortDir` | string | `asc` ou `desc` (padrão `asc`). |
+| `search` | string | Filtro de texto livre. |
+| `from` / `to` | date | Filtros de intervalo de datas quando aplicável. |
 
-Example:
+Exemplo:
 
 ```
 GET /v1/orders?page=2&pageSize=25&sortBy=orderDate&sortDir=desc&search=acme
@@ -220,18 +220,18 @@ GET /v1/orders?page=2&pageSize=25&sortBy=orderDate&sortDir=desc&search=acme
 
 ## Rate Limiting
 
-- Default limit: **100 requests / 60 seconds** per IP for anonymous endpoints.
-- Authenticated limit: **600 requests / 60 seconds** per user.
-- Exceeding the limit returns `429 Too Many Requests` with `Retry-After` header (seconds).
-- Auth endpoints (`/login`, `/refresh`) have stricter limits to mitigate brute force.
+- Limite padrão: **100 requisições / 60 segundos** por IP para endpoints anônimos.
+- Limite autenticado: **600 requisições / 60 segundos** por usuário.
+- Exceder o limite retorna `429 Too Many Requests` com cabeçalho `Retry-After` (segundos).
+- Endpoints de auth (`/login`, `/refresh`) têm limites mais rigorosos para mitigar força bruta.
 
 ---
 
-## File Uploads
+## Uploads de Arquivo
 
-File uploads use `multipart/form-data`. The maximum request size is **10 MB** by default.
+Uploads de arquivo usam `multipart/form-data`. O tamanho máximo de requisição é **10 MB** por padrão.
 
-Example — uploading a product image:
+Exemplo — fazendo upload de imagem de produto:
 
 ```
 POST /v1/products/{id}/image
@@ -240,7 +240,7 @@ Content-Type: multipart/form-data
 file: <binary>
 ```
 
-Response `200`:
+Resposta `200`:
 
 ```json
 { "success": true, "url": "https://api.ems.example.com/uploads/products/1.png" }
@@ -250,34 +250,34 @@ Response `200`:
 
 ## Swagger UI
 
-Interactive documentation is served at:
+Documentação interativa é servida em:
 
 ```
 http://localhost:5000/swagger
 ```
 
-It includes request schemas, example values, and the ability to authorize with a JWT and try calls directly.
+Inclui schemas de requisição, valores de exemplo e a capacidade de autorizar com um JWT e testar chamadas diretamente.
 
 ---
 
-## Module: Auth
+## Módulo: Auth
 
-| Method | URL | Description |
+| Método | URL | Descrição |
 | --- | --- | --- |
-| POST | `/v1/auth/login` | Authenticate and receive tokens. |
-| POST | `/v1/auth/refresh` | Rotate access + refresh token. |
-| POST | `/v1/auth/logout` | Revoke refresh token. |
-| POST | `/v1/auth/forgot-password` | Request password reset email. |
-| POST | `/v1/auth/reset-password` | Set new password via token. |
-| POST | `/v1/auth/change-password` | Change password (authenticated). |
+| POST | `/v1/auth/login` | Autenticar e receber tokens. |
+| POST | `/v1/auth/refresh` | Rotacionar access + refresh token. |
+| POST | `/v1/auth/logout` | Revogar refresh token. |
+| POST | `/v1/auth/forgot-password` | Solicitar email de redefinição de senha. |
+| POST | `/v1/auth/reset-password` | Definir nova senha via token. |
+| POST | `/v1/auth/change-password` | Alterar senha (autenticado). |
 
-**Forgot password request:**
+**Requisição de esqueci a senha:**
 
 ```json
 { "email": "user@ems.local" }
 ```
 
-**Reset password request:**
+**Requisição de reset password:**
 
 ```json
 { "token": "reset-token", "newPassword": "NewStrong@123" }
@@ -285,17 +285,17 @@ It includes request schemas, example values, and the ability to authorize with a
 
 ---
 
-## Module: Users
+## Módulo: Users
 
-| Method | URL | Description |
+| Método | URL | Descrição |
 | --- | --- | --- |
-| GET | `/v1/users` | List users (paginated). |
-| GET | `/v1/users/{id}` | Get a user. |
-| POST | `/v1/users` | Create a user. |
-| PUT | `/v1/users/{id}` | Update a user. |
-| DELETE | `/v1/users/{id}` | Disable/delete a user. |
+| GET | `/v1/users` | Listar usuários (paginado). |
+| GET | `/v1/users/{id}` | Obter um usuário. |
+| POST | `/v1/users` | Criar um usuário. |
+| PUT | `/v1/users/{id}` | Atualizar um usuário. |
+| DELETE | `/v1/users/{id}` | Desativar/excluir um usuário. |
 
-**Create user request:**
+**Requisição de criação de usuário:**
 
 ```json
 {
@@ -307,7 +307,7 @@ It includes request schemas, example values, and the ability to authorize with a
 }
 ```
 
-**Response `201`:**
+**Resposta `201`:**
 
 ```json
 {
@@ -318,17 +318,17 @@ It includes request schemas, example values, and the ability to authorize with a
 
 ---
 
-## Module: Roles
+## Módulo: Roles
 
-| Method | URL | Description |
+| Método | URL | Descrição |
 | --- | --- | --- |
-| GET | `/v1/roles` | List roles. |
-| GET | `/v1/roles/{id}` | Get role with permissions. |
-| POST | `/v1/roles` | Create role. |
-| PUT | `/v1/roles/{id}` | Update role/permissions. |
-| DELETE | `/v1/roles/{id}` | Delete role. |
+| GET | `/v1/roles` | Listar funções. |
+| GET | `/v1/roles/{id}` | Obter função com permissões. |
+| POST | `/v1/roles` | Criar função. |
+| PUT | `/v1/roles/{id}` | Atualizar função/permissões. |
+| DELETE | `/v1/roles/{id}` | Excluir função. |
 
-**Create role request:**
+**Requisição de criação de função:**
 
 ```json
 {
@@ -340,19 +340,19 @@ It includes request schemas, example values, and the ability to authorize with a
 
 ---
 
-## Module: Customers
+## Módulo: Customers
 
-| Method | URL | Description |
+| Método | URL | Descrição |
 | --- | --- | --- |
-| GET | `/v1/customers` | List customers. |
-| GET | `/v1/customers/{id}` | Get customer (+ contacts). |
-| POST | `/v1/customers` | Create customer. |
-| PUT | `/v1/customers/{id}` | Update customer. |
-| DELETE | `/v1/customers/{id}` | Delete customer. |
-| GET | `/v1/customers/{id}/contacts` | List contacts. |
-| POST | `/v1/customers/{id}/contacts` | Add contact. |
+| GET | `/v1/customers` | Listar clientes. |
+| GET | `/v1/customers/{id}` | Obter cliente (+ contatos). |
+| POST | `/v1/customers` | Criar cliente. |
+| PUT | `/v1/customers/{id}` | Atualizar cliente. |
+| DELETE | `/v1/customers/{id}` | Excluir cliente. |
+| GET | `/v1/customers/{id}/contacts` | Listar contatos. |
+| POST | `/v1/customers/{id}/contacts` | Adicionar contato. |
 
-**Create customer request:**
+**Requisição de criação de cliente:**
 
 ```json
 {
@@ -368,17 +368,17 @@ It includes request schemas, example values, and the ability to authorize with a
 
 ---
 
-## Module: Suppliers
+## Módulo: Suppliers
 
-| Method | URL | Description |
+| Método | URL | Descrição |
 | --- | --- | --- |
-| GET | `/v1/suppliers` | List suppliers. |
-| GET | `/v1/suppliers/{id}` | Get supplier. |
-| POST | `/v1/suppliers` | Create supplier. |
-| PUT | `/v1/suppliers/{id}` | Update supplier. |
-| DELETE | `/v1/suppliers/{id}` | Delete supplier. |
+| GET | `/v1/suppliers` | Listar fornecedores. |
+| GET | `/v1/suppliers/{id}` | Obter fornecedor. |
+| POST | `/v1/suppliers` | Criar fornecedor. |
+| PUT | `/v1/suppliers/{id}` | Atualizar fornecedor. |
+| DELETE | `/v1/suppliers/{id}` | Excluir fornecedor. |
 
-**Create supplier request:**
+**Requisição de criação de fornecedor:**
 
 ```json
 {
@@ -393,20 +393,20 @@ It includes request schemas, example values, and the ability to authorize with a
 
 ---
 
-## Module: Products
+## Módulo: Products
 
-| Method | URL | Description |
+| Método | URL | Descrição |
 | --- | --- | --- |
-| GET | `/v1/products` | List products (filter by category). |
-| GET | `/v1/products/{id}` | Get product. |
-| POST | `/v1/products` | Create product. |
-| PUT | `/v1/products/{id}` | Update product. |
-| DELETE | `/v1/products/{id}` | Delete product. |
-| GET | `/v1/categories` | List categories. |
-| POST | `/v1/categories` | Create category. |
-| POST | `/v1/products/{id}/image` | Upload product image. |
+| GET | `/v1/products` | Listar produtos (filtrar por categoria). |
+| GET | `/v1/products/{id}` | Obter produto. |
+| POST | `/v1/products` | Criar produto. |
+| PUT | `/v1/products/{id}` | Atualizar produto. |
+| DELETE | `/v1/products/{id}` | Excluir produto. |
+| GET | `/v1/categories` | Listar categorias. |
+| POST | `/v1/categories` | Criar categoria. |
+| POST | `/v1/products/{id}/image` | Upload de imagem do produto. |
 
-**Create product request:**
+**Requisição de criação de produto:**
 
 ```json
 {
@@ -424,19 +424,19 @@ It includes request schemas, example values, and the ability to authorize with a
 
 ---
 
-## Module: Orders
+## Módulo: Orders
 
-| Method | URL | Description |
+| Método | URL | Descrição |
 | --- | --- | --- |
-| GET | `/v1/orders` | List orders. |
-| GET | `/v1/orders/{id}` | Get order with line items. |
-| POST | `/v1/orders` | Create order (draft). |
-| PUT | `/v1/orders/{id}` | Update order. |
-| POST | `/v1/orders/{id}/confirm` | Confirm (reserve stock). |
-| POST | `/v1/orders/{id}/cancel` | Cancel order. |
-| GET | `/v1/orders/{id}/print` | Get print-ready HTML. |
+| GET | `/v1/orders` | Listar pedidos. |
+| GET | `/v1/orders/{id}` | Obter pedido com itens de linha. |
+| POST | `/v1/orders` | Criar pedido (rascunho). |
+| PUT | `/v1/orders/{id}` | Atualizar pedido. |
+| POST | `/v1/orders/{id}/confirm` | Confirmar (reservar estoque). |
+| POST | `/v1/orders/{id}/cancel` | Cancelar pedido. |
+| GET | `/v1/orders/{id}/print` | Obter HTML pronto para impressão. |
 
-**Create order request:**
+**Requisição de criação de pedido:**
 
 ```json
 {
@@ -450,7 +450,7 @@ It includes request schemas, example values, and the ability to authorize with a
 }
 ```
 
-**Response `201`:**
+**Resposta `201`:**
 
 ```json
 {
@@ -466,17 +466,17 @@ It includes request schemas, example values, and the ability to authorize with a
 
 ---
 
-## Module: Invoices
+## Módulo: Invoices
 
-| Method | URL | Description |
+| Método | URL | Descrição |
 | --- | --- | --- |
-| GET | `/v1/invoices` | List invoices. |
-| GET | `/v1/invoices/{id}` | Get invoice. |
-| POST | `/v1/invoices` | Create/issue invoice. |
-| POST | `/v1/invoices/{id}/payments` | Record payment. |
-| GET | `/v1/invoices/{id}/pdf` | Download PDF (binary). |
+| GET | `/v1/invoices` | Listar faturas. |
+| GET | `/v1/invoices/{id}` | Obter fatura. |
+| POST | `/v1/invoices` | Criar/emitir fatura. |
+| POST | `/v1/invoices/{id}/payments` | Registrar pagamento. |
+| GET | `/v1/invoices/{id}/pdf` | Download PDF (binário). |
 
-**Create invoice request:**
+**Requisição de criação de fatura:**
 
 ```json
 {
@@ -487,7 +487,7 @@ It includes request schemas, example values, and the ability to authorize with a
 }
 ```
 
-**Record payment request:**
+**Requisição de registro de pagamento:**
 
 ```json
 {
@@ -499,16 +499,16 @@ It includes request schemas, example values, and the ability to authorize with a
 
 ---
 
-## Module: Inventory
+## Módulo: Inventory
 
-| Method | URL | Description |
+| Método | URL | Descrição |
 | --- | --- | --- |
-| GET | `/v1/inventory/movements` | List movements (paginated). |
-| POST | `/v1/inventory/entry` | Stock entry (inbound). |
-| POST | `/v1/inventory/exit` | Stock exit (outbound). |
-| GET | `/v1/inventory/stock-levels` | Current stock per product. |
+| GET | `/v1/inventory/movements` | Listar movimentações (paginado). |
+| POST | `/v1/inventory/entry` | Entrada de estoque (entrada). |
+| POST | `/v1/inventory/exit` | Saída de estoque (saída). |
+| GET | `/v1/inventory/stock-levels` | Estoque atual por produto. |
 
-**Stock entry request:**
+**Requisição de entrada de estoque:**
 
 ```json
 {
@@ -520,7 +520,7 @@ It includes request schemas, example values, and the ability to authorize with a
 }
 ```
 
-**Stock exit request:**
+**Requisição de saída de estoque:**
 
 ```json
 {
@@ -534,30 +534,30 @@ It includes request schemas, example values, and the ability to authorize with a
 
 ---
 
-## Module: Finance
+## Módulo: Finance
 
-| Method | URL | Description |
+| Método | URL | Descrição |
 | --- | --- | --- |
-| GET | `/v1/finance/accounts-payable` | List payable bills. |
-| GET | `/v1/finance/accounts-receivable` | List receivables. |
-| GET | `/v1/finance/cash-flow?from=&to=` | Cash flow statement. |
+| GET | `/v1/finance/accounts-payable` | Listar contas a pagar. |
+| GET | `/v1/finance/accounts-receivable` | Listar contas a receber. |
+| GET | `/v1/finance/cash-flow?from=&to=` | Demonstrativo de fluxo de caixa. |
 
-All return paginated/aggregated JSON suitable for charts.
+Todos retornam JSON paginado/agregado adequado para gráficos.
 
 ---
 
-## Module: Reports
+## Módulo: Reports
 
-| Method | URL | Description |
+| Método | URL | Descrição |
 | --- | --- | --- |
-| GET | `/v1/reports/sales` | Sales report. |
-| GET | `/v1/reports/inventory` | Inventory report. |
-| GET | `/v1/reports/customers` | Customer report. |
-| GET | `/v1/reports/products` | Product report. |
-| GET | `/v1/reports/financial` | Financial summary. |
-| GET | `/v1/reports/{type}/export?format=pdf|excel|csv` | Export report. |
+| GET | `/v1/reports/sales` | Relatório de vendas. |
+| GET | `/v1/reports/inventory` | Relatório de estoque. |
+| GET | `/v1/reports/customers` | Relatório de clientes. |
+| GET | `/v1/reports/products` | Relatório de produtos. |
+| GET | `/v1/reports/financial` | Resumo financeiro. |
+| GET | `/v1/reports/{type}/export?format=pdf|excel|csv` | Exportar relatório. |
 
-Example:
+Exemplo:
 
 ```
 GET /v1/reports/sales?from=2026-01-01&to=2026-07-17&groupBy=customer
@@ -565,16 +565,16 @@ GET /v1/reports/sales?from=2026-01-01&to=2026-07-17&groupBy=customer
 
 ---
 
-## Module: Audit Logs
+## Módulo: Audit Logs
 
-| Method | URL | Description |
+| Método | URL | Descrição |
 | --- | --- | --- |
-| GET | `/v1/audit-logs` | List audit events (paginated, filterable). |
-| GET | `/v1/audit-logs/{id}` | Get a single event. |
+| GET | `/v1/audit-logs` | Listar eventos de auditoria (paginado, filtrável). |
+| GET | `/v1/audit-logs/{id}` | Obter um evento único. |
 
-Query params: `action`, `entity`, `userId`, `from`, `to`.
+Params de query: `action`, `entity`, `userId`, `from`, `to`.
 
-**Sample entry:**
+**Entrada de amostra:**
 
 ```json
 {

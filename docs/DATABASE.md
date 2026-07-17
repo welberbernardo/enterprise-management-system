@@ -1,41 +1,41 @@
-# Database Documentation
+# Documentação do Banco de Dados
 
-This document describes the **Enterprise Management System (EMS)** database: its structure, tables, relationships, constraints, and operational procedures. EMS uses **Microsoft SQL Server** with **Entity Framework Core 9** migrations.
-
----
-
-## Table of Contents
-
-- [Database Overview](#database-overview)
-- [Entity Relationship Diagram](#entity-relationship-diagram)
-- [Table Descriptions](#table-descriptions)
-- [Relationships](#relationships)
-- [Indexes](#indexes)
-- [Constraints](#constraints)
-- [Seed Data](#seed-data)
-- [Backup Strategy](#backup-strategy)
-- [Maintenance Plan](#maintenance-plan)
-- [Performance Tuning](#performance-tuning)
+Este documento descreve o banco de dados do **Sistema de Gestão Empresarial (EMS)**: sua estrutura, tabelas, relacionamentos, restrições e procedimentos operacionais. O EMS usa **Microsoft SQL Server** com migrações do **Entity Framework Core 9**.
 
 ---
 
-## Database Overview
+## Índice
 
-- **Engine:** Microsoft SQL Server 2019+ (Express/Developer/Standard). LocalDB for development.
-- **Name:** `EMS`
+- [Visão Geral do Banco de Dados](#visão-geral-do-banco-de-dados)
+- [Diagrama de Relacionamento de Entidades](#diagrama-de-relacionamento-de-entidades)
+- [Descrições das Tabelas](#descrições-das-tabelas)
+- [Relacionamentos](#relacionamentos)
+- [Índices](#índices)
+- [Restrições](#restrições)
+- [Dados de Seed](#dados-de-seed)
+- [Estratégia de Backup](#estratégia-de-backup)
+- [Plano de Manutenção](#plano-de-manutenção)
+- [Ajuste de Performance](#ajuste-de-performance)
+
+---
+
+## Visão Geral do Banco de Dados
+
+- **Engine:** Microsoft SQL Server 2019+ (Express/Developer/Standard). LocalDB para desenvolvimento.
+- **Nome:** `EMS`
 - **Collation:** `SQL_Latin1_General_CP1_CI_AS` (case-insensitive).
-- **ORM:** Entity Framework Core 9 (Code First, migrations).
-- **Identity model:** GUID (`uniqueidentifier`) primary keys generated in application code.
-- **Auditing:** `CreatedAt`, `CreatedBy`, `UpdatedAt`, `UpdatedBy` columns on most tables.
-- **Soft delete:** most business entities use an `IsDeleted` flag rather than physical deletion.
+- **ORM:** Entity Framework Core 9 (Code First, migrações).
+- **Modelo de identidade:** Chaves primárias GUID (`uniqueidentifier`) geradas no código da aplicação.
+- **Auditoria:** Colunas `CreatedAt`, `CreatedBy`, `UpdatedAt`, `UpdatedBy` na maioria das tabelas.
+- **Exclusão suave:** a maioria das entidades de negócio usa um flag `IsDeleted` em vez de exclusão física.
 
-There are **18 core tables** spanning identity, parties (customers/suppliers), catalog, transactions (orders/invoices/inventory), finance, and system (audit/settings).
+Existem **18 tabelas principais** abrangendo identidade, partes (clientes/fornecedores), catálogo, transações (pedidos/faturas/estoque), finanças e sistema (auditoria/configurações).
 
 ---
 
-## Entity Relationship Diagram
+## Diagrama de Relacionamento de Entidades
 
-Text-based ERD (relationships shown as `──<` one-to-many):
+ERD baseado em texto (relacionamentos mostrados como `──<` um-para-muitos):
 
 ```
 Users ──< UserRoles >── Roles ──< RolePermissions >── Permissions
@@ -53,282 +53,282 @@ Products ──< OrderItems  <── Orders ──< Invoices ──< InvoicePaym
   └────────────┘
 Products ──< InventoryMovements
   │
-Orders ──< InventoryMovements (reference)
-Suppliers ──< InventoryMovements (reference)
+Orders ──< InventoryMovements (referência)
+Suppliers ──< InventoryMovements (referência)
   │
-Settings (single company row)
+Settings (linha única de empresa)
   │
 FinanceTransactions  (payable / receivable / cash)
 ```
 
-**Legend:** `──<` = "one parent, many children".
+**Legenda:** `──<` = "um pai, muitos filhos".
 
 ---
 
-## Table Descriptions
+## Descrições das Tabelas
 
 ### 1. Users
-Stores application accounts.
+Armazena contas da aplicação.
 
-| Column | Type | Null | Notes |
+| Coluna | Tipo | Null | Notas |
 | --- | --- | --- | --- |
-| Id | uniqueidentifier | No | PK |
-| FullName | nvarchar(200) | No | |
-| Email | nvarchar(256) | No | Unique |
-| PasswordHash | nvarchar(512) | No | Argon2/bcrypt hash |
-| Phone | nvarchar(50) | Yes | |
-| IsActive | bit | No | Default 1 |
-| LastLoginAt | datetime2 | Yes | |
-| CreatedAt | datetime2 | No | |
-| CreatedBy | uniqueidentifier | Yes | |
-| UpdatedAt | datetime2 | Yes | |
-| UpdatedBy | uniqueidentifier | Yes | |
-| IsDeleted | bit | No | Default 0 |
+| Id | uniqueidentifier | Não | PK |
+| FullName | nvarchar(200) | Não | |
+| Email | nvarchar(256) | Não | Único |
+| PasswordHash | nvarchar(512) | Não | Hash Argon2/bcrypt |
+| Phone | nvarchar(50) | Sim | |
+| IsActive | bit | Não | Padrão 1 |
+| LastLoginAt | datetime2 | Sim | |
+| CreatedAt | datetime2 | Não | |
+| CreatedBy | uniqueidentifier | Sim | |
+| UpdatedAt | datetime2 | Sim | |
+| UpdatedBy | uniqueidentifier | Sim | |
+| IsDeleted | bit | Não | Padrão 0 |
 
 ### 2. Roles
-Named permission groups.
+Grupos de permissão nomeados.
 
-| Column | Type | Null | Notes |
+| Coluna | Tipo | Null | Notas |
 | --- | --- | --- | --- |
-| Id | uniqueidentifier | No | PK |
-| Name | nvarchar(100) | No | Unique |
-| Description | nvarchar(500) | Yes | |
-| IsSystem | bit | No | Default 0 (system roles protected) |
-| CreatedAt | datetime2 | No | |
+| Id | uniqueidentifier | Não | PK |
+| Name | nvarchar(100) | Não | Único |
+| Description | nvarchar(500) | Sim | |
+| IsSystem | bit | Não | Padrão 0 (funções de sistema protegidas) |
+| CreatedAt | datetime2 | Não | |
 
 ### 3. Permissions
-Granular permission definitions (e.g., `Orders.Create`).
+Definições de permissão granulares (ex., `Orders.Create`).
 
-| Column | Type | Null | Notes |
+| Coluna | Tipo | Null | Notas |
 | --- | --- | --- | --- |
-| Id | uniqueidentifier | No | PK |
-| Name | nvarchar(100) | No | Unique |
-| Module | nvarchar(100) | No | Grouping |
-| Description | nvarchar(500) | Yes | |
+| Id | uniqueidentifier | Não | PK |
+| Name | nvarchar(100) | Não | Único |
+| Module | nvarchar(100) | Não | Agrupamento |
+| Description | nvarchar(500) | Sim | |
 
 ### 4. UserRoles (join)
-Maps users to roles (many-to-many).
+Mapeia usuários para funções (muitos-para-muitos).
 
-| Column | Type | Null | Notes |
+| Coluna | Tipo | Null | Notas |
 | --- | --- | --- | --- |
-| UserId | uniqueidentifier | No | PK/FK → Users |
-| RoleId | uniqueidentifier | No | PK/FK → Roles |
+| UserId | uniqueidentifier | Não | PK/FK → Users |
+| RoleId | uniqueidentifier | Não | PK/FK → Roles |
 
 ### 5. RolePermissions (join)
-Maps roles to permissions (many-to-many).
+Mapeia funções para permissões (muitos-para-muitos).
 
-| Column | Type | Null | Notes |
+| Coluna | Tipo | Null | Notas |
 | --- | --- | --- | --- |
-| RoleId | uniqueidentifier | No | PK/FK → Roles |
-| PermissionId | uniqueidentifier | No | PK/FK → Permissions |
+| RoleId | uniqueidentifier | Não | PK/FK → Roles |
+| PermissionId | uniqueidentifier | Não | PK/FK → Permissions |
 
 ### 6. Customers
-Customer organizations.
+Organizações clientes.
 
-| Column | Type | Null | Notes |
+| Coluna | Tipo | Null | Notas |
 | --- | --- | --- | --- |
-| Id | uniqueidentifier | No | PK |
-| Name | nvarchar(200) | No | |
-| TaxId | nvarchar(50) | Yes | |
-| Email | nvarchar(256) | Yes | |
-| Phone | nvarchar(50) | Yes | |
-| Address | nvarchar(500) | Yes | |
-| CreditLimit | decimal(18,2) | No | Default 0 |
-| PaymentTermsDays | int | No | Default 30 |
-| Balance | decimal(18,2) | No | Denormalized, maintained by triggers/jobs |
-| CreatedAt | datetime2 | No | |
-| IsDeleted | bit | No | Default 0 |
+| Id | uniqueidentifier | Não | PK |
+| Name | nvarchar(200) | Não | |
+| TaxId | nvarchar(50) | Sim | |
+| Email | nvarchar(256) | Sim | |
+| Phone | nvarchar(50) | Sim | |
+| Address | nvarchar(500) | Sim | |
+| CreditLimit | decimal(18,2) | Não | Padrão 0 |
+| PaymentTermsDays | int | Não | Padrão 30 |
+| Balance | decimal(18,2) | Não | Desnormalizado, mantido por triggers/jobs |
+| CreatedAt | datetime2 | Não | |
+| IsDeleted | bit | Não | Padrão 0 |
 
 ### 7. CustomerContacts
-Contacts belonging to a customer.
+Contatos pertencentes a um cliente.
 
-| Column | Type | Null | Notes |
+| Coluna | Tipo | Null | Notas |
 | --- | --- | --- | --- |
-| Id | uniqueidentifier | No | PK |
-| CustomerId | uniqueidentifier | No | FK → Customers |
-| Name | nvarchar(200) | No | |
-| Email | nvarchar(256) | Yes | |
-| Phone | nvarchar(50) | Yes | |
-| Role | nvarchar(100) | Yes | |
-| IsPrimary | bit | No | Default 0 |
+| Id | uniqueidentifier | Não | PK |
+| CustomerId | uniqueidentifier | Não | FK → Customers |
+| Name | nvarchar(200) | Não | |
+| Email | nvarchar(256) | Sim | |
+| Phone | nvarchar(50) | Sim | |
+| Role | nvarchar(100) | Sim | |
+| IsPrimary | bit | Não | Padrão 0 |
 
 ### 8. Suppliers
-Supplier organizations.
+Organizações fornecedoras.
 
-| Column | Type | Null | Notes |
+| Coluna | Tipo | Null | Notas |
 | --- | --- | --- | --- |
-| Id | uniqueidentifier | No | PK |
-| Name | nvarchar(200) | No | |
-| TaxId | nvarchar(50) | Yes | |
-| Email | nvarchar(256) | Yes | |
-| Phone | nvarchar(50) | Yes | |
-| Address | nvarchar(500) | Yes | |
-| PaymentTermsDays | int | No | Default 30 |
-| CreatedAt | datetime2 | No | |
-| IsDeleted | bit | No | Default 0 |
+| Id | uniqueidentifier | Não | PK |
+| Name | nvarchar(200) | Não | |
+| TaxId | nvarchar(50) | Sim | |
+| Email | nvarchar(256) | Sim | |
+| Phone | nvarchar(50) | Sim | |
+| Address | nvarchar(500) | Sim | |
+| PaymentTermsDays | int | Não | Padrão 30 |
+| CreatedAt | datetime2 | Não | |
+| IsDeleted | bit | Não | Padrão 0 |
 
 ### 9. Categories
-Product categories (self-referencing for nesting).
+Categorias de produtos (auto-referenciadas para aninhamento).
 
-| Column | Type | Null | Notes |
+| Coluna | Tipo | Null | Notas |
 | --- | --- | --- | --- |
-| Id | uniqueidentifier | No | PK |
-| Name | nvarchar(100) | No | |
-| ParentId | uniqueidentifier | Yes | FK → Categories (nullable) |
-| IsDeleted | bit | No | Default 0 |
+| Id | uniqueidentifier | Não | PK |
+| Name | nvarchar(100) | Não | |
+| ParentId | uniqueidentifier | Sim | FK → Categories (anulável) |
+| IsDeleted | bit | Não | Padrão 0 |
 
 ### 10. Products
-Catalog items.
+Itens de catálogo.
 
-| Column | Type | Null | Notes |
+| Coluna | Tipo | Null | Notas |
 | --- | --- | --- | --- |
-| Id | uniqueidentifier | No | PK |
-| Sku | nvarchar(50) | No | Unique |
-| Name | nvarchar(200) | No | |
-| Description | nvarchar(1000) | Yes | |
-| CategoryId | uniqueidentifier | Yes | FK → Categories |
-| UnitOfMeasure | nvarchar(20) | No | |
-| PurchasePrice | decimal(18,2) | No | |
-| SalePrice | decimal(18,2) | No | |
-| ReorderLevel | int | No | Default 0 |
-| Stock | int | No | Current on-hand |
-| ImageUrl | nvarchar(500) | Yes | |
-| IsDeleted | bit | No | Default 0 |
+| Id | uniqueidentifier | Não | PK |
+| Sku | nvarchar(50) | Não | Único |
+| Name | nvarchar(200) | Não | |
+| Description | nvarchar(1000) | Sim | |
+| CategoryId | uniqueidentifier | Sim | FK → Categories |
+| UnitOfMeasure | nvarchar(20) | Não | |
+| PurchasePrice | decimal(18,2) | Não | |
+| SalePrice | decimal(18,2) | Não | |
+| ReorderLevel | int | Não | Padrão 0 |
+| Stock | int | Não | Atual em mãos |
+| ImageUrl | nvarchar(500) | Sim | |
+| IsDeleted | bit | Não | Padrão 0 |
 
 ### 11. Orders
-Sales orders.
+Pedidos de venda.
 
-| Column | Type | Null | Notes |
+| Coluna | Tipo | Null | Notas |
 | --- | --- | --- | --- |
-| Id | uniqueidentifier | No | PK |
-| OrderNumber | nvarchar(50) | No | Unique |
-| CustomerId | uniqueidentifier | No | FK → Customers |
-| OrderDate | datetime2 | No | |
-| Status | nvarchar(20) | No | Draft/Confirmed/Processing/Completed/Cancelled |
-| SubTotal | decimal(18,2) | No | |
-| TaxRate | decimal(5,2) | No | |
-| TaxAmount | decimal(18,2) | No | |
-| Total | decimal(18,2) | No | |
-| Notes | nvarchar(1000) | Yes | |
-| CreatedBy | uniqueidentifier | No | FK → Users |
-| CreatedAt | datetime2 | No | |
-| IsDeleted | bit | No | Default 0 |
+| Id | uniqueidentifier | Não | PK |
+| OrderNumber | nvarchar(50) | Não | Único |
+| CustomerId | uniqueidentifier | Não | FK → Customers |
+| OrderDate | datetime2 | Não | |
+| Status | nvarchar(20) | Não | Draft/Confirmed/Processing/Completed/Cancelled |
+| SubTotal | decimal(18,2) | Não | |
+| TaxRate | decimal(5,2) | Não | |
+| TaxAmount | decimal(18,2) | Não | |
+| Total | decimal(18,2) | Não | |
+| Notes | nvarchar(1000) | Sim | |
+| CreatedBy | uniqueidentifier | Não | FK → Users |
+| CreatedAt | datetime2 | Não | |
+| IsDeleted | bit | Não | Padrão 0 |
 
 ### 12. OrderItems
-Line items for an order.
+Itens de linha de um pedido.
 
-| Column | Type | Null | Notes |
+| Coluna | Tipo | Null | Notas |
 | --- | --- | --- | --- |
-| Id | uniqueidentifier | No | PK |
-| OrderId | uniqueidentifier | No | FK → Orders |
-| ProductId | uniqueidentifier | No | FK → Products |
-| Quantity | int | No | |
-| UnitPrice | decimal(18,2) | No | |
-| LineTotal | decimal(18,2) | No | Quantity * UnitPrice |
+| Id | uniqueidentifier | Não | PK |
+| OrderId | uniqueidentifier | Não | FK → Orders |
+| ProductId | uniqueidentifier | Não | FK → Products |
+| Quantity | int | Não | |
+| UnitPrice | decimal(18,2) | Não | |
+| LineTotal | decimal(18,2) | Não | Quantity * UnitPrice |
 
 ### 13. Invoices
-Issued invoices.
+Faturas emitidas.
 
-| Column | Type | Null | Notes |
+| Coluna | Tipo | Null | Notas |
 | --- | --- | --- | --- |
-| Id | uniqueidentifier | No | PK |
-| InvoiceNumber | nvarchar(50) | No | Unique |
-| OrderId | uniqueidentifier | Yes | FK → Orders |
-| CustomerId | uniqueidentifier | No | FK → Customers |
-| IssueDate | datetime2 | No | |
-| DueDate | datetime2 | No | |
-| SubTotal | decimal(18,2) | No | |
-| TaxAmount | decimal(18,2) | No | |
-| Total | decimal(18,2) | No | |
-| PaidAmount | decimal(18,2) | No | Default 0 |
-| Status | nvarchar(20) | No | Unpaid/Partial/Paid/Overdue |
-| Notes | nvarchar(1000) | Yes | |
-| CreatedAt | datetime2 | No | |
+| Id | uniqueidentifier | Não | PK |
+| InvoiceNumber | nvarchar(50) | Não | Único |
+| OrderId | uniqueidentifier | Sim | FK → Orders |
+| CustomerId | uniqueidentifier | Não | FK → Customers |
+| IssueDate | datetime2 | Não | |
+| DueDate | datetime2 | Não | |
+| SubTotal | decimal(18,2) | Não | |
+| TaxAmount | decimal(18,2) | Não | |
+| Total | decimal(18,2) | Não | |
+| PaidAmount | decimal(18,2) | Não | Padrão 0 |
+| Status | nvarchar(20) | Não | Unpaid/Partial/Paid/Overdue |
+| Notes | nvarchar(1000) | Sim | |
+| CreatedAt | datetime2 | Não | |
 
 ### 14. InvoicePayments
-Payments applied to invoices.
+Pagamentos aplicados a faturas.
 
-| Column | Type | Null | Notes |
+| Coluna | Tipo | Null | Notas |
 | --- | --- | --- | --- |
-| Id | uniqueidentifier | No | PK |
-| InvoiceId | uniqueidentifier | No | FK → Invoices |
-| Amount | decimal(18,2) | No | |
-| Method | nvarchar(20) | No | Cash/Transfer/Card |
-| PaymentDate | datetime2 | No | |
-| CreatedAt | datetime2 | No | |
+| Id | uniqueidentifier | Não | PK |
+| InvoiceId | uniqueidentifier | Não | FK → Invoices |
+| Amount | decimal(18,2) | Não | |
+| Method | nvarchar(20) | Não | Cash/Transfer/Card |
+| PaymentDate | datetime2 | Não | |
+| CreatedAt | datetime2 | Não | |
 
 ### 15. InventoryMovements
-Stock entry/exit history.
+Histórico de entrada/saída de estoque.
 
-| Column | Type | Null | Notes |
+| Coluna | Tipo | Null | Notas |
 | --- | --- | --- | --- |
-| Id | uniqueidentifier | No | PK |
-| ProductId | uniqueidentifier | No | FK → Products |
-| Type | nvarchar(10) | No | Entry/Exit |
-| Quantity | int | No | Signed magnitude (always positive) |
-| Reference | nvarchar(100) | Yes | Order/PO/invoice ref |
-| SupplierId | uniqueidentifier | Yes | FK → Suppliers (entries) |
-| OrderId | uniqueidentifier | Yes | FK → Orders (exits) |
-| Reason | nvarchar(100) | Yes | |
-| CreatedBy | uniqueidentifier | No | FK → Users |
-| CreatedAt | datetime2 | No | |
+| Id | uniqueidentifier | Não | PK |
+| ProductId | uniqueidentifier | Não | FK → Products |
+| Type | nvarchar(10) | Não | Entry/Exit |
+| Quantity | int | Não | Magnitude sinalizada (sempre positiva) |
+| Reference | nvarchar(100) | Sim | Referência de order/PO/invoice |
+| SupplierId | uniqueidentifier | Sim | FK → Suppliers (entradas) |
+| OrderId | uniqueidentifier | Sim | FK → Orders (saídas) |
+| Reason | nvarchar(100) | Sim | |
+| CreatedBy | uniqueidentifier | Não | FK → Users |
+| CreatedAt | datetime2 | Não | |
 
 ### 16. FinanceTransactions
-General financial ledger rows (payable/receivable/cash).
+Linhas de razão financeira geral (payable/receivable/cash).
 
-| Column | Type | Null | Notes |
+| Coluna | Tipo | Null | Notas |
 | --- | --- | --- | --- |
-| Id | uniqueidentifier | No | PK |
-| Type | nvarchar(20) | No | Payable/Receivable/CashIn/CashOut |
-| ReferenceId | uniqueidentifier | Yes | Links to invoice/order/supplier |
-| Amount | decimal(18,2) | No | |
-| Direction | nvarchar(10) | No | In/Out |
-| TransactionDate | datetime2 | No | |
-| Description | nvarchar(500) | Yes | |
-| CreatedAt | datetime2 | No | |
+| Id | uniqueidentifier | Não | PK |
+| Type | nvarchar(20) | Não | Payable/Receivable/CashIn/CashOut |
+| ReferenceId | uniqueidentifier | Sim | Link para invoice/order/supplier |
+| Amount | decimal(18,2) | Não | |
+| Direction | nvarchar(10) | Não | In/Out |
+| TransactionDate | datetime2 | Não | |
+| Description | nvarchar(500) | Sim | |
+| CreatedAt | datetime2 | Não | |
 
 ### 17. Settings
-Single company configuration row.
+Linha única de configuração da empresa.
 
-| Column | Type | Null | Notes |
+| Coluna | Tipo | Null | Notas |
 | --- | --- | --- | --- |
-| Id | uniqueidentifier | No | PK |
-| CompanyName | nvarchar(200) | No | |
-| TaxId | nvarchar(50) | Yes | |
-| Address | nvarchar(500) | Yes | |
-| Phone | nvarchar(50) | Yes | |
-| Email | nvarchar(256) | Yes | |
-| LogoUrl | nvarchar(500) | Yes | |
-| DefaultCurrency | nvarchar(10) | No | Default 'USD' |
-| DefaultTaxRate | decimal(5,2) | No | |
-| Theme | nvarchar(20) | No | Light/Dark |
+| Id | uniqueidentifier | Não | PK |
+| CompanyName | nvarchar(200) | Não | |
+| TaxId | nvarchar(50) | Sim | |
+| Address | nvarchar(500) | Sim | |
+| Phone | nvarchar(50) | Sim | |
+| Email | nvarchar(256) | Sim | |
+| LogoUrl | nvarchar(500) | Sim | |
+| DefaultCurrency | nvarchar(10) | Não | Padrão 'USD' |
+| DefaultTaxRate | decimal(5,2) | Não | |
+| Theme | nvarchar(20) | Não | Light/Dark |
 
 ### 18. AuditLogs
-Immutable security/data event log.
+Log de eventos imutável de segurança/dados.
 
-| Column | Type | Null | Notes |
+| Coluna | Tipo | Null | Notas |
 | --- | --- | --- | --- |
-| Id | uniqueidentifier | No | PK |
-| Timestamp | datetime2 | No | |
-| UserId | uniqueidentifier | Yes | FK → Users |
-| Action | nvarchar(50) | No | Login/Create/Update/Delete/etc. |
-| Entity | nvarchar(100) | Yes | |
-| EntityId | nvarchar(100) | Yes | |
-| IpAddress | nvarchar(50) | Yes | |
-| Detail | nvarchar(1000) | Yes | |
+| Id | uniqueidentifier | Não | PK |
+| Timestamp | datetime2 | Não | |
+| UserId | uniqueidentifier | Sim | FK → Users |
+| Action | nvarchar(50) | Não | Login/Create/Update/Delete/etc. |
+| Entity | nvarchar(100) | Sim | |
+| EntityId | nvarchar(100) | Sim | |
+| IpAddress | nvarchar(50) | Sim | |
+| Detail | nvarchar(1000) | Sim | |
 
 ---
 
-## Relationships
+## Relacionamentos
 
-| Child | Parent | FK | On Delete |
+| Filho | Pai | FK | Ao Excluir |
 | --- | --- | --- | --- |
 | UserRoles | Users | UserId | Cascade |
 | UserRoles | Roles | RoleId | Cascade |
 | RolePermissions | Roles | RoleId | Cascade |
 | RolePermissions | Permissions | PermissionId | Cascade |
 | CustomerContacts | Customers | CustomerId | Cascade |
-| Categories | Categories | ParentId | Restrict (no orphan nesting) |
+| Categories | Categories | ParentId | Restrict (sem aninhamento órfão) |
 | Products | Categories | CategoryId | Set Null |
 | Orders | Customers | CustomerId | Restrict |
 | OrderItems | Orders | OrderId | Cascade |
@@ -343,22 +343,22 @@ Immutable security/data event log.
 
 ---
 
-## Indexes
+## Índices
 
-Recommended/auto-created indexes:
+Índices recomendados/auto-criados:
 
-| Table | Index | Columns |
+| Tabela | Índice | Colunas |
 | --- | --- | --- |
-| Users | UQ_Users_Email | Email (unique) |
-| Roles | UQ_Roles_Name | Name (unique) |
-| Permissions | UQ_Permissions_Name | Name (unique) |
+| Users | UQ_Users_Email | Email (único) |
+| Roles | UQ_Roles_Name | Name (único) |
+| Permissions | UQ_Permissions_Name | Name (único) |
 | Customers | IX_Customers_Name | Name |
-| Products | UQ_Products_Sku | Sku (unique) |
+| Products | UQ_Products_Sku | Sku (único) |
 | Products | IX_Products_Category | CategoryId |
 | Orders | IX_Orders_Customer | CustomerId |
 | Orders | IX_Orders_Status_Date | Status, OrderDate |
 | OrderItems | IX_OrderItems_Order | OrderId |
-| Invoices | UQ_Invoices_Number | InvoiceNumber (unique) |
+| Invoices | UQ_Invoices_Number | InvoiceNumber (único) |
 | Invoices | IX_Invoices_Customer | CustomerId |
 | Invoices | IX_Invoices_Status_Due | Status, DueDate |
 | InvoicePayments | IX_Payments_Invoice | InvoiceId |
@@ -369,40 +369,40 @@ Recommended/auto-created indexes:
 
 ---
 
-## Constraints
+## Restrições
 
-- **Primary keys:** all `Id` columns (`uniqueidentifier`, clustered).
-- **Foreign keys:** as listed in Relationships.
-- **Unique constraints:** Email, Role.Name, Permission.Name, Product.Sku, Order.OrderNumber, Invoice.InvoiceNumber.
-- **Check constraints:** `Orders.Status IN (...)`, `Invoices.Status IN (...)`, `InventoryMovements.Type IN ('Entry','Exit')`, `FinanceTransactions.Direction IN ('In','Out')`, non-negative monetary columns.
-- **Default constraints:** `IsDeleted=0`, `IsActive=1`, `PaymentTermsDays=30`, timestamps defaulting to `SYSUTCDATETIME()`.
-
----
-
-## Seed Data
-
-The seed routine (`dotnet run --seed`) creates:
-
-1. **Permissions** — one row per module action (e.g., `Users.View`, `Orders.Create`).
-2. **Roles** — `Admin` (all permissions, `IsSystem=1`) and `User` (read-only subset).
-3. **Admin user** — `admin@ems.local` / `Admin@12345` (hashed), assigned `Admin`.
-4. **Settings** — a single default company row.
-5. **Sample reference data** (optional flag) — a few customers, suppliers, categories, and products so the dashboard renders immediately.
-
-> Seed is idempotent: re-running does not duplicate system rows.
+- **Chaves primárias:** todas as colunas `Id` (`uniqueidentifier`, clustered).
+- **Chaves estrangeiras:** conforme listado em Relacionamentos.
+- **Restrições únicas:** Email, Role.Name, Permission.Name, Product.Sku, Order.OrderNumber, Invoice.InvoiceNumber.
+- **Restrições de check:** `Orders.Status IN (...)`, `Invoices.Status IN (...)`, `InventoryMovements.Type IN ('Entry','Exit')`, `FinanceTransactions.Direction IN ('In','Out')`, colunas monetárias não negativas.
+- **Restrições default:** `IsDeleted=0`, `IsActive=1`, `PaymentTermsDays=30`, timestamps padrão para `SYSUTCDATETIME()`.
 
 ---
 
-## Backup Strategy
+## Dados de Seed
 
-- **Full backup:** nightly (`BACKUP DATABASE [EMS] TO DISK = ...`).
-- **Differential:** every 6 hours.
-- **Transaction log:** every 15 minutes (FULL recovery model).
-- **Retention:** 30 days online, 12 months archived to cold storage.
-- **Restore test:** quarterly restore drill to verify integrity.
-- **Docker:** mount a named volume for `/var/opt/mssql` and snapshot it, or use `sqlcmd` to back up to a mounted host path.
+A rotina de seed (`dotnet run --seed`) cria:
 
-Example:
+1. **Permissions** — uma linha por ação de módulo (ex., `Users.View`, `Orders.Create`).
+2. **Roles** — `Admin` (todas as permissões, `IsSystem=1`) e `User` (subconjunto somente leitura).
+3. **Admin user** — `admin@ems.local` / `Admin@12345` (hashed), atribuído a `Admin`.
+4. **Settings** — uma linha padrão de empresa.
+5. **Sample reference data** (flag opcional) — alguns clientes, fornecedores, categorias e produtos para o painel renderizar imediatamente.
+
+> Seed é idempotente: re-executar não duplica linhas de sistema.
+
+---
+
+## Estratégia de Backup
+
+- **Backup completo:** noturno (`BACKUP DATABASE [EMS] TO DISK = ...`).
+- **Diferencial:** a cada 6 horas.
+- **Log de transação:** a cada 15 minutos (modelo de recuperação FULL).
+- **Retenção:** 30 dias online, 12 meses arquivados em armazenamento frio.
+- **Teste de restore:** drill de restore trimestral para verificar integridade.
+- **Docker:** monte um volume nomeado para `/var/opt/mssql` e faça snapshot, ou use `sqlcmd` para fazer backup para um caminho host montado.
+
+Exemplo:
 
 ```sql
 BACKUP DATABASE [EMS]
@@ -412,21 +412,21 @@ WITH COMPRESSION, STATS = 10;
 
 ---
 
-## Maintenance Plan
+## Plano de Manutenção
 
-- **Index maintenance:** `REORGANIZE` weekly, `REBUILD` monthly for fragmented indexes (>30%).
-- **Statistics:** auto-update on; manual `UPDATE STATISTICS` after large bulk loads.
-- **Integrity check:** `DBCC CHECKDB` weekly.
-- **Audit log pruning:** archive rows older than 24 months to a history table.
-- **Inventory balance reconciliation:** nightly job to recompute `Customer.Balance` and verify `Product.Stock` against `InventoryMovements`.
+- **Manutenção de índices:** `REORGANIZE` semanal, `REBUILD` mensal para índices fragmentados (>30%).
+- **Estatísticas:** auto-update ativado; `UPDATE STATISTICS` manual após grandes cargas em massa.
+- **Verificação de integridade:** `DBCC CHECKDB` semanal.
+- **Limpeza de logs de auditoria:** arquive linhas mais antigas que 24 meses para uma tabela de histórico.
+- **Reconciliação de saldo de estoque:** job noturno para recomputar `Customer.Balance` e verificar `Product.Stock` contra `InventoryMovements`.
 
 ---
 
-## Performance Tuning
+## Ajuste de Performance
 
-- Keep covering indexes for the most common list filters (`Status`, date ranges).
-- Use **pagination** on all list endpoints (avoid `SELECT *` without `OFFSET/FETCH`).
-- Maintain the `Customer.Balance` denormalized column via a nightly job rather than computing on every read.
-- Enable **query store** to capture regressions.
-- For reporting, consider scheduled materialized aggregates (sales/day) instead of scanning raw tables.
-- Set `TrustServerCertificate=True` only in dev; use a real cert and encrypted connections in production.
+- Mantenha índices de cobertura para os filtros de lista mais comuns (`Status`, intervalos de data).
+- Use **paginação** em todos os endpoints de lista (evite `SELECT *` sem `OFFSET/FETCH`).
+- Mantenha a coluna `Customer.Balance` desnormalizada via job noturno em vez de computar a cada leitura.
+- Habilite **query store** para capturar regressões.
+- Para relatórios, considere agregados materializados agendados (vendas/dia) em vez de escanear tabelas brutas.
+- Defina `TrustServerCertificate=True` apenas em dev; use um certificado real e conexões criptografadas em produção.
