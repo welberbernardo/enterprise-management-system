@@ -1,0 +1,34 @@
+<type>
+# Enter a title for your changes (max 50 chars):
+
+# Enter a detailed description (wrap at 72 chars):
+
+# For guidance see: https://www.conventionalcommits.org/
+
+# <type>: <description> (max 50 chars)
+
+# Types: feat | fix | docs | style | refactor | perf | test | build | ci | chore | revert
+
+# feat: add new feature
+# fix: bug fix
+# docs: documentation only
+# style: formatting, missing semicolons, etc.
+# refactor: code change that neither fixes a bug nor adds a feature
+# perf: performance improvement
+# test: adding missing tests
+# build: changes to build system or dependencies
+# ci: CI configuration changes
+# chore: maintenance tasks, no production code change
+# revert: revert previous commit
+
+# Body (wrap at 72 chars):
+
+# - Bullet points are acceptable
+# - Explain the motivation for the change
+# - Contrast with previous behavior
+
+# Footer:
+
+# Fixes #123
+# Closes #456
+# Reviewed-by: Name

@@ -1,0 +1,62 @@
+* text=auto eol=crlf
+
+*.cs text eol=crlf
+*.csproj text eol=crlf
+*.sln text eol=crlf
+*.config text eol=crlf
+*.json text eol=crlf
+*.xml text eol=crlf
+*.props text eol=crlf
+*.targets text eol=crlf
+*.resx text eol=crlf
+*.config text eol=crlf
+*.cshtml text eol=crlf
+*.razor text eol=crlf
+
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.less text eol=lf
+*.html text eol=lf
+*.svg text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.dll binary
+*.exe binary
+*.pdb binary
+*.so binary
+*.dylib binary
+*.mdb binary
+*.mdf binary
+*.ldf binary
+*.sqlite binary
+*.sqlite3 binary
+*.pem binary
+*.key binary
+*.crt binary
+*.pfx binary
+
+*.sh text eol=lf
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+Dockerfile* text eol=lf
+docker-compose*.yml text eol=lf
+
+*.sln merge=union
+*.csproj merge=union

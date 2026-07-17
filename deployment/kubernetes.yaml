@@ -1,0 +1,309 @@
+# ==========================================================
+# Kubernetes manifests for Enterprise Management System
+# Apply with:  kubectl apply -f kubernetes.yaml
+# ==========================================================
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: enterprise
+  labels:
+    app.kubernetes.io/part-of: enterprise-management-system
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: enterprise-config
+  namespace: enterprise
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  ASPNETCORE_URLS: "http://+:8080"
+  HTTPS_PORT: "443"
+  DB_NAME: "EnterpriseDb"
+  JWT__Issuer: "https://enterprise.example.com"
+  JWT__Audience: "https://enterprise.example.com"
+  JWT__AccessTokenExpiryMinutes: "60"
+  JWT__RefreshTokenExpiryDays: "7"
+  VITE_API_BASE_URL: "/api"
+  ConnectionStrings__DefaultConnection: "Server=sqlserver.enterprise.svc.cluster.local,1433;Database=EnterpriseDb;User Id=sa;Password=__SA_PASSWORD__;TrustServerCertificate=True;MultipleActiveResultSets=true"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: enterprise-secrets
+  namespace: enterprise
+type: Opaque
+stringData:
+  SA_PASSWORD: "Str0ng!P@ssw0rd#2024"
+  JWT__Secret: "ThisIsAVeryLongAndSecureJwtSigningSecretKeyThatMustBeAtLeast32CharactersLong!"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sqlserver
+  namespace: enterprise
+  labels:
+    app: sqlserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sqlserver
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: sqlserver
+    spec:
+      containers:
+        - name: sqlserver
+          image: mcr.microsoft.com/mssql/server:2022-latest
+          ports:
+            - containerPort: 1433
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_SA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: enterprise-secrets
+                  key: SA_PASSWORD
+            - name: MSSQL_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: enterprise-config
+                  key: DB_NAME
+          resources:
+            limits:
+              cpu: "2"
+              memory: 2Gi
+            requests:
+              cpu: "1"
+              memory: 1Gi
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -Q "SELECT 1"
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -Q "SELECT 1"
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 10
+          volumeMounts:
+            - name: sqlserver-data
+              mountPath: /var/opt/mssql
+      volumes:
+        - name: sqlserver-data
+          persistentVolumeClaim:
+            claimName: sqlserver-pvc
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sqlserver-pvc
+  namespace: enterprise
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sqlserver
+  namespace: enterprise
+spec:
+  selector:
+    app: sqlserver
+  ports:
+    - port: 1433
+      targetPort: 1433
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: enterprise
+  labels:
+    app: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: enterprise-backend:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: enterprise-config
+            - secretRef:
+                name: enterprise-secrets
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: "500m"
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 40
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            timeoutSeconds: 10
+          volumeMounts:
+            - name: backend-logs
+              mountPath: /app/logs
+      volumes:
+        - name: backend-logs
+          emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: enterprise
+spec:
+  selector:
+    app: backend
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: enterprise
+  labels:
+    app: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: enterprise-frontend:latest
+          ports:
+            - containerPort: 3000
+          resources:
+            limits:
+              cpu: "500m"
+              memory: 256Mi
+            requests:
+              cpu: "250m"
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: enterprise
+spec:
+  selector:
+    app: frontend
+  ports:
+    - port: 3000
+      targetPort: 3000
+  type: ClusterIP
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: enterprise-ingress
+  namespace: enterprise
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: SAMEORIGIN";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - enterprise.example.com
+      secretName: enterprise-tls
+  rules:
+    - host: enterprise.example.com
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 8080
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 3000

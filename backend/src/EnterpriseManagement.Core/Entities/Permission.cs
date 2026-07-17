@@ -1,0 +1,16 @@
+using EnterpriseManagement.Core.Interfaces;
+
+namespace EnterpriseManagement.Core.Entities;
+
+/// <summary>Represents an individual permission within a module/action.</summary>
+public class Permission : IEntity
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string Module { get; set; } = string.Empty;
+    public string Action { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public ICollection<RolePermission>? RolePermissions { get; set; }
+}
