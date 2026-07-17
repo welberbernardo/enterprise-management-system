@@ -122,7 +122,7 @@ export function ProductForm({ isOpen, product, onClose, onSaved }: ProductFormPr
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Select label="Category" error={errors.categoryId?.message}
-                    options={[{ label: 'Select category', value: '' }, ...(categories?.data.map((c) => ({ label: c.name, value: c.id })) ?? [])]}
+                    options={[{ label: 'Select category', value: '' }, ...(categories?.data?.map((c) => ({ label: c.name, value: c.id })) ?? [])]}
                     {...register('categoryId')} />
                   <FieldError name="categoryId" />
                 </div>

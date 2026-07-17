@@ -47,10 +47,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = useCallback(async (payload: LoginRequest) => {
     const response = await authService.login(payload);
-    localStorage.setItem(TOKEN_KEY, response.token);
+    localStorage.setItem(TOKEN_KEY, response.accessToken);
     if (response.refreshToken) localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
-    setToken(response.token);
-    setUser(response.user);
+    setToken(response.accessToken);
+    const profile = await authService.getProfile();
+    setUser(profile);
   }, []);
 
   const logout = useCallback(() => {
@@ -75,7 +76,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 
   const hasRole = useCallback(
-    (role: string | string[]) => checkRole(user?.roles ?? [], role),
+    (role: string | string[]) => checkRole(user?.role ? [user.role] : [], role),
     [user],
   );
 

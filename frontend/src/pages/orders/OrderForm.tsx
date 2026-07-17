@@ -107,7 +107,7 @@ export function OrderForm({ isOpen, order, customers, onClose, onSaved }: OrderF
     }
   };
 
-  const productOptions = [{ label: 'Select product', value: '' }, ...(products?.data.map((p) => ({ label: `${p.name} (${p.code})`, value: p.id })) ?? [])];
+  const productOptions = [{ label: 'Select product', value: '' }, ...(products?.data?.map((p) => ({ label: `${p.name} (${p.code})`, value: p.id })) ?? [])];
   const customerOptions = [{ label: 'Select customer', value: '' }, ...customers.map((c) => ({ label: c.name, value: c.id }))];
 
   return (

@@ -38,6 +38,14 @@ public class RecentActivityDto
     public DateTime CreatedAt { get; set; }
 }
 
+/// <summary>Aggregated dashboard payload returned by the main dashboard endpoint.</summary>
+public class DashboardDataDto
+{
+    public DashboardStatsDto Stats { get; set; } = new DashboardStatsDto();
+    public SalesChartDto Charts { get; set; } = new SalesChartDto();
+    public IEnumerable<RecentActivityDto> RecentActivity { get; set; } = new List<RecentActivityDto>();
+}
+
 /// <summary>Report filter parameters.</summary>
 public class ReportQueryDto
 {

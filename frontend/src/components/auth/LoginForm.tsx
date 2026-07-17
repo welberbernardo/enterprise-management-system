@@ -11,9 +11,8 @@ import { useState } from 'react';
 import { Mail, Lock } from 'lucide-react';
 
 const schema = z.object({
-  email: z.string().email('Enter a valid email'),
+  username: z.string().min(1, 'Username is required'),
   password: z.string().min(1, 'Password is required'),
-  rememberMe: z.boolean().optional(),
 });
 
 type LoginFormValues = z.infer<typeof schema>;
@@ -34,16 +33,20 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: '', password: '', rememberMe: true },
+    defaultValues: { username: '', password: '' },
   });
 
   const onSubmit = async (values: LoginFormValues) => {
+    console.log('LoginForm onSubmit called', values);
     setSubmitting(true);
     try {
-      await login({ email: values.email, password: values.password, rememberMe: values.rememberMe });
+      console.log('Calling login...');
+      await login({ username: values.username, password: values.password });
+      console.log('Login success');
       notify.success('Welcome back!');
       onSuccess?.();
     } catch (error) {
+      console.log('Login error', error);
       notify.error(error instanceof Error ? error.message : 'Login failed');
     } finally {
       setSubmitting(false);
@@ -53,25 +56,25 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <Input
-        label="Email"
-        type="email"
-        placeholder="you@company.com"
+        label="Username"
+        type="text"
+        placeholder="admin"
         leftIcon={<Mail className="h-4 w-4" />}
-        error={errors.email?.message}
-        {...register('email')}
+        error={errors.username?.message}
+        {...register('username')}
       />
       <div>
         <Input
           label="Password"
           type="password"
-          placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+          placeholder="••••••••"
           leftIcon={<Lock className="h-4 w-4" />}
           error={errors.password?.message}
           {...register('password')}
         />
       </div>
       <div className="flex items-center justify-between">
-        <Checkbox label="Remember me" {...register('rememberMe')} />
+        <Checkbox label="Remember me" />
         <a href="/forgot-password" className="text-sm font-medium text-primary-600 hover:text-primary-700">
           Forgot password?
         </a>

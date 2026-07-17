@@ -16,6 +16,20 @@ public class DashboardService : IDashboardService
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<DashboardDataDto> GetDashboardAsync(CancellationToken cancellationToken = default)
+    {
+        var stats = await GetStatsAsync(cancellationToken);
+        var charts = await GetSalesChartAsync(cancellationToken);
+        var activity = await GetRecentActivityAsync(10, cancellationToken);
+
+        return new DashboardDataDto
+        {
+            Stats = stats,
+            Charts = charts,
+            RecentActivity = activity
+        };
+    }
+
     public async Task<DashboardStatsDto> GetStatsAsync(CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow;

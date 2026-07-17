@@ -65,7 +65,7 @@ export function StockEntry({ isOpen, onClose, onSaved }: StockEntryProps) {
         <FormWrapper id="stock-entry-form" onSubmit={onSubmit} className="space-y-4">
           <div>
             <Select label="Product" error={errors.productId?.message}
-              options={[{ label: 'Select product', value: '' }, ...(products?.data.map((p) => ({ label: `${p.name} (${p.code})`, value: p.id })) ?? [])]}
+              options={[{ label: 'Select product', value: '' }, ...(products?.data?.map((p) => ({ label: `${p.name} (${p.code})`, value: p.id })) ?? [])]}
               {...register('productId')} />
             <FieldError name="productId" />
           </div>

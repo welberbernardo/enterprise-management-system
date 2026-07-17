@@ -10,7 +10,17 @@ import type {
 
 export const authService = {
   async login(payload: LoginRequest): Promise<AuthResponse> {
-    return http.post<AuthResponse>('/auth/login', payload);
+    const response = await http.post<any>('/auth/login', payload);
+    return {
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+      userId: response.userId,
+      username: response.username,
+      fullName: response.fullName,
+      role: response.role,
+      permissions: response.permissions ?? [],
+      accessTokenExpiry: response.accessTokenExpiry,
+    };
   },
   async logout(): Promise<void> {
     return http.post<void>('/auth/logout');
@@ -22,7 +32,19 @@ export const authService = {
     return http.post<void>('/auth/reset-password', payload);
   },
   async getProfile(): Promise<AuthUser> {
-    return http.get<AuthUser>('/auth/profile');
+    const profile = await http.get<any>('/auth/profile');
+    return {
+      id: profile.id,
+      username: profile.username,
+      email: profile.email,
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      fullName: profile.fullName,
+      phone: profile.phone,
+      role: profile.role,
+      permissions: profile.permissions ?? [],
+      lastLoginAt: profile.lastLoginAt,
+    };
   },
   async changePassword(payload: ChangePasswordRequest): Promise<void> {
     return http.post<void>('/auth/change-password', payload);

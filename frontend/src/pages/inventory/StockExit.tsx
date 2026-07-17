@@ -65,7 +65,7 @@ export function StockExit({ isOpen, onClose, onSaved }: StockExitProps) {
         <FormWrapper id="stock-exit-form" onSubmit={onSubmit} className="space-y-4">
           <div>
             <Select label="Product" error={errors.productId?.message}
-              options={[{ label: 'Select product', value: '' }, ...(products?.data.map((p) => ({ label: `${p.name} (${p.code})`, value: p.id })) ?? [])]}
+              options={[{ label: 'Select product', value: '' }, ...(products?.data?.map((p) => ({ label: `${p.name} (${p.code})`, value: p.id })) ?? [])]}
               {...register('productId')} />
             <FieldError name="productId" />
           </div>

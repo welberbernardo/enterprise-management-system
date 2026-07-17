@@ -13,5 +13,5 @@ export function usePermissions() {
 
   const is = useMemo(() => (role: string | string[]) => hasRole(role), [hasRole]);
 
-  return { permissions, can, is, roles: user?.roles ?? [] };
+  return { permissions, can, is, roles: user?.role ? [user.role] : [] };
 }

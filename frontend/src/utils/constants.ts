@@ -1,5 +1,5 @@
 export const APP_NAME = import.meta.env.VITE_APP_NAME || 'Enterprise Management System';
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5100/api';
 export const TOKEN_KEY = import.meta.env.VITE_TOKEN_KEY || 'ems_token';
 export const REFRESH_TOKEN_KEY = import.meta.env.VITE_REFRESH_TOKEN_KEY || 'ems_refresh_token';
 

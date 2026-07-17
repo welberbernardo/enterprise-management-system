@@ -23,6 +23,15 @@ public class DashboardController : BaseController
         return Ok(ApiResponse<DashboardStatsDto>.Ok(result));
     }
 
+    /// <summary>Returns aggregated dashboard data.</summary>
+    [HttpGet]
+    [RequirePermission("Reports", "View")]
+    public async Task<ActionResult<ApiResponse<DashboardDataDto>>> GetDashboard(CancellationToken cancellationToken)
+    {
+        var result = await _service.GetDashboardAsync(cancellationToken);
+        return Ok(ApiResponse<DashboardDataDto>.Ok(result));
+    }
+
     /// <summary>Returns sales chart data.</summary>
     [HttpGet("charts")]
     [RequirePermission("Reports", "View")]

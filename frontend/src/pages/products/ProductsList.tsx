@@ -51,7 +51,7 @@ export function ProductsList() {
 
   const categoryOptions = [
     { label: 'All Categories', value: '' },
-    ...(categories?.data.map((c) => ({ label: c.name, value: c.id })) ?? []),
+    ...(categories?.data?.map((c) => ({ label: c.name, value: c.id })) ?? []),
   ];
 
   const columns: Column<Product>[] = [

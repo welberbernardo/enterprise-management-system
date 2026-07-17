@@ -68,7 +68,7 @@ export function Profile() {
       <PageHeader title="Profile" subtitle="Manage your personal account" />
 
       <div className="flex items-center gap-4 mb-2">
-        <Avatar name={user?.fullName ?? 'User'} src={user?.avatar} size="xl" />
+        <Avatar name={user?.fullName ?? 'User'} size="xl" />
         <div>
           <h2 className="text-xl font-semibold">{user?.fullName}</h2>
           <p className="text-sm text-slate-500">{user?.email}</p>

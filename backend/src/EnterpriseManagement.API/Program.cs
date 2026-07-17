@@ -112,11 +112,10 @@ using (var scope = app.Services.CreateScope())
 app.UseSwagger();
 app.UseSwaggerUI();
 
+app.UseCors("Default");
 app.UseResponseCompression();
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseMiddleware<GlobalExceptionMiddleware>();
-
-app.UseCors("Default");
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -145,6 +145,7 @@ public interface IAccountReceivableService
 /// <summary>Dashboard service contract.</summary>
 public interface IDashboardService
 {
+    Task<DashboardDataDto> GetDashboardAsync(CancellationToken cancellationToken = default);
     Task<DashboardStatsDto> GetStatsAsync(CancellationToken cancellationToken = default);
     Task<SalesChartDto> GetSalesChartAsync(CancellationToken cancellationToken = default);
     Task<IEnumerable<RecentActivityDto>> GetRecentActivityAsync(int count = 10, CancellationToken cancellationToken = default);

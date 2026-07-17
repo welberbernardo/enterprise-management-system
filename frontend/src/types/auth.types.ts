@@ -1,7 +1,6 @@
 ﻿export interface LoginRequest {
-  email: string;
+  username: string;
   password: string;
-  rememberMe?: boolean;
 }
 
 export interface ForgotPasswordRequest {
@@ -15,22 +14,27 @@ export interface ResetPasswordRequest {
 }
 
 export interface AuthUser {
-  id: string;
+  id: number;
+  username: string;
   email: string;
   firstName: string;
   lastName: string;
   fullName: string;
-  avatar?: string;
   phone?: string;
   role: string;
-  roles: string[];
   permissions: string[];
+  lastLoginAt?: string;
 }
 
 export interface AuthResponse {
-  token: string;
+  accessToken: string;
   refreshToken: string;
-  user: AuthUser;
+  userId: number;
+  username: string;
+  fullName: string;
+  role: string;
+  permissions: string[];
+  accessTokenExpiry: string;
 }
 
 export interface ChangePasswordRequest {

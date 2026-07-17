@@ -68,7 +68,7 @@ export function UsersList() {
 
   const roleOptions = [
     { label: 'All Roles', value: '' },
-    ...(roles?.data.map((r) => ({ label: r.name, value: r.id })) ?? []),
+    ...(roles?.data?.map((r) => ({ label: r.name, value: r.id })) ?? []),
   ];
 
   const columns: Column<User>[] = [
