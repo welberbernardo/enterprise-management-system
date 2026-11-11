@@ -79,3 +79,12 @@ Do not merge or publish solely based on static edits. Require successful build a
 - Split report metadata into `frontend/src/pages/reports/reportTypes.ts` and updated Reports.tsx import; removed unused UserDetail import. Await a successful run for the latest commit.
 - RefreshTokenAsync now revokes a consumed refresh token before minting a new one. **Outstanding:** concurrency-safe atomic token consumption and a regression test for replay/races. This change has not yet been verified by CI.
 - Password-reset flow remains incomplete: generated reset token is not persisted/validated. Do not advertise this feature as secure or complete.
+
+## CI and deployment follow-up (2026-11-11)
+
+- GitHub Actions run [43050052786](https://github.com/welberbernardo/enterprise-management-system/actions/runs/43050052786) passed backend restore/build/unit tests and frontend typecheck/build/strict lint, including refresh token replay regression coverage.
+- Fixed nginx's nonexistent `app` user, preserved `/api/` path on proxying, and allowed the container's plain HTTP `/health` check.
+- Updated Compose to avoid publishing SQL Server, backend, and frontend directly to host ports; added required bootstrap-admin password and explicit CORS origin. Corrected the SQL Server healthcheck tool path and escaped the container environment variable.
+- Replaced realistic example passwords and JWT secrets with obvious placeholders in `deployment/.env.example`.
+- **Not validated:** Docker build, Compose startup, SQL Server image healthcheck compatibility, TLS certificates, schema migrations, and end-to-end API/browser integration. The HTTPS nginx server requires externally provisioned `/etc/nginx/ssl/fullchain.pem` and `privkey.pem`; without them it cannot start. Do not deploy this Compose stack as production-ready yet.
+- Refresh token rotation test covers sequential replay, **not atomic concurrent reuse**. Password reset is incomplete; do not advertise it as production-ready.
