@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using AutoMapper;
 using BCrypt.Net;
 using EnterpriseManagement.Core.DTOs.Auth;
