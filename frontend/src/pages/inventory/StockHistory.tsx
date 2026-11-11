@@ -1,7 +1,7 @@
 ﻿import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNotification } from '../../hooks/useNotification';
-import { getErrorMessage } from '../../services/api';
+
 import { inventoryService } from '../../services/inventory.service';
 import { Card } from '../../components/ui/Card';
 import { Table, type Column } from '../../components/ui/Table';
@@ -14,7 +14,7 @@ import { formatDate } from '../../utils/formatters';
 import type { StockMovement } from '../../types/inventory.types';
 
 export function StockHistory() {
-  const notify = useNotification();
+
   const [page, setPage] = useState(PAGINATION.DEFAULT_PAGE);
   const [range, setRange] = useState({
     startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
