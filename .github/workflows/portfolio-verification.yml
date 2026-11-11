@@ -70,6 +70,11 @@ jobs:
         run: docker build -f deployment/Dockerfile.frontend -t enterprise-frontend:ci frontend
       - name: Validate nginx configuration with temporary CI certificate
         run: |
-          docker run --rm --entrypoint sh \
+          mkdir -p "${{ runner.temp }}/nginx-ssl"
+          openssl req -x509 -nodes -newkey rsa:2048 -days 1 -subj "/CN=localhost" \
+            -keyout "${{ runner.temp }}/nginx-ssl/privkey.pem" \
+            -out "${{ runner.temp }}/nginx-ssl/fullchain.pem" >/dev/null 2>&1
+          docker run --rm \
             -v "${{ github.workspace }}/deployment/nginx.conf:/etc/nginx/nginx.conf:ro" \
-            nginx:alpine -c 'mkdir -p /etc/nginx/ssl && openssl req -x509 -nodes -newkey rsa:2048 -days 1 -subj "/CN=localhost" -keyout /etc/nginx/ssl/privkey.pem -out /etc/nginx/ssl/fullchain.pem >/dev/null 2>&1 && nginx -t'
+            -v "${{ runner.temp }}/nginx-ssl:/etc/nginx/ssl:ro" \
+            nginx:alpine nginx -t
