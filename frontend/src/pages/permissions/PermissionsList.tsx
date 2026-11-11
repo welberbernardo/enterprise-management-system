@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { permissionService } from '../../services/permission.service';
 import { useNotification } from '../../hooks/useNotification';
-import { getErrorMessage } from '../../services/api';
+
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/ui/Card';
 import { Table, type Column } from '../../components/ui/Table';
@@ -16,7 +16,7 @@ import { Select } from '../../components/ui/Select';
 import type { Permission } from '../../types/permission.types';
 
 export function PermissionsList() {
-  const notify = useNotification();
+
   const [search, setSearch] = useState('');
   const [group, setGroup] = useState('');
   const [page, setPage] = useState(PAGINATION.DEFAULT_PAGE);
