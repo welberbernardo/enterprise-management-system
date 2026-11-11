@@ -9,12 +9,10 @@ import { Card, CardHeader } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { StatCard } from '../../components/charts/StatCard';
 import { BarChart } from '../../components/charts/BarChart';
-import { Table, type Column } from '../../components/ui/Table';
+import { Table } from '../../components/ui/Table';
 import { DateRangePicker } from '../../components/forms/DateRangePicker';
-import { Select } from '../../components/ui/Select';
 import { Spinner } from '../../components/ui/Spinner';
 import { formatCurrency, formatNumber } from '../../utils/formatters';
-import { PAGINATION } from '../../utils/constants';
 import type { ReportResult, ReportType } from '../../types/report.types';
 import type { DateRange } from '../../types/common.types';
 
