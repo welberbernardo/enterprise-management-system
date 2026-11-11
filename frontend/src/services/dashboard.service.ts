@@ -63,6 +63,8 @@ export const dashboardService = {
       recentOrders: [],
       recentActivity: (data.recentActivity ?? []).map((item: DashboardApiItem) => ({
         id: String(item.id ?? ''),
+        createdAt: item.createdAt ?? new Date().toISOString(),
+        updatedAt: item.createdAt ?? new Date().toISOString(),
         user: item.userName ?? 'System',
         action: item.action ?? '',
         entity: item.entityType ?? '',
