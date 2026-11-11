@@ -1,6 +1,7 @@
 using EnterpriseManagement.Core.Entities;
 using EnterpriseManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using BCrypt.Net;
 
 namespace EnterpriseManagement.Infrastructure.Data;
@@ -10,7 +11,7 @@ public static class DatabaseInitializer
 {
     private static readonly SemaphoreSlim _seedingLock = new(1, 1);
 
-    public static async Task SeedAsync(ApplicationDbContext context)
+    public static async Task SeedAsync(ApplicationDbContext context, IConfiguration configuration)
     {
         await _seedingLock.WaitAsync();
         try
@@ -18,6 +19,11 @@ public static class DatabaseInitializer
             await context.Database.MigrateAsync();
 
             if (await context.Roles.AnyAsync()) return;
+
+            var adminPassword = configuration["BootstrapAdmin:Password"];
+            if (string.IsNullOrWhiteSpace(adminPassword) || adminPassword.Length < 16)
+                throw new InvalidOperationException("BootstrapAdmin:Password must be configured with at least 16 characters for initial database seeding.");
+
 
             var permissions = new List<Permission>
             {
@@ -61,9 +67,26 @@ public static class DatabaseInitializer
             await context.Roles.AddRangeAsync(adminRole, managerRole, staffRole);
             await context.SaveChangesAsync();
 
+            // Least-privilege defaults for newly initialized databases.
+            // Existing databases require a separate, reviewed permission migration.
+            var managerPermissions = new HashSet<string>
+            {
+                "View Users", "View Roles", "View Customers", "Manage Customers",
+                "View Products", "Manage Products", "View Orders", "Manage Orders",
+                "View Reports"
+            };
+            var staffPermissions = new HashSet<string>
+            {
+                "View Customers", "View Products", "View Orders"
+            };
             foreach (var role in new[] { adminRole, managerRole, staffRole })
             {
-                foreach (var perm in permissions)
+                var granted = role == adminRole
+                    ? permissions
+                    : permissions.Where(p => role == managerRole
+                        ? managerPermissions.Contains(p.Name)
+                        : staffPermissions.Contains(p.Name));
+                foreach (var perm in granted)
                 {
                     await context.RolePermissions.AddAsync(new RolePermission
                     {
@@ -78,7 +101,7 @@ public static class DatabaseInitializer
             {
                 Username = "admin",
                 Email = "admin@enterprise.com",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(adminPassword),
                 FirstName = "System",
                 LastName = "Administrator",
                 Phone = "+10000000000",

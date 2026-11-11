@@ -15,16 +15,29 @@ const api: AxiosInstance = axios.create({
   },
 });
 
-let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
+let refreshPromise: Promise<string> | null = null;
 
-function subscribeTokenRefresh(cb: (token: string) => void): void {
-  refreshSubscribers.push(cb);
+function clearSession(): void {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
 }
 
-function onTokenRefreshed(token: string): void {
-  refreshSubscribers.forEach((cb) => cb(token));
-  refreshSubscribers = [];
+async function renewAccessToken(): Promise<string> {
+  const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+  if (!refreshToken) throw new Error('No refresh token available');
+
+  // Use a separate Axios call so that refresh failures do not recurse into this interceptor.
+  const response = await axios.post<ApiResponse<{ accessToken: string; refreshToken: string }>>(
+    `${API_BASE_URL}/auth/refresh`,
+    { refreshToken },
+  );
+  const tokens = response.data.data;
+  if (!tokens?.accessToken || !tokens?.refreshToken) {
+    throw new Error('Invalid refresh response');
+  }
+  localStorage.setItem(TOKEN_KEY, tokens.accessToken);
+  localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
+  return tokens.accessToken;
 }
 
 api.interceptors.request.use(
@@ -45,44 +58,22 @@ api.interceptors.response.use(
       _retry?: boolean;
     };
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        return new Promise((resolve) => {
-          subscribeTokenRefresh((token: string) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            resolve(api(originalRequest));
-          });
-        });
-      }
-
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry &&
+        !originalRequest.url?.includes('/auth/login')) {
       originalRequest._retry = true;
-      isRefreshing = true;
-
-      const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-      if (!refreshToken) {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(REFRESH_TOKEN_KEY);
-        window.location.href = '/login';
-        return Promise.reject(error);
-      }
-
       try {
-        const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-          refreshToken,
-        });
-        const { token, refreshToken: newRefresh } = response.data.data;
-        localStorage.setItem(TOKEN_KEY, token);
-        if (newRefresh) localStorage.setItem(REFRESH_TOKEN_KEY, newRefresh);
-        api.defaults.headers.Authorization = `Bearer ${token}`;
-        onTokenRefreshed(token);
+        if (!refreshPromise) {
+          refreshPromise = renewAccessToken().finally(() => {
+            refreshPromise = null;
+          });
+        }
+        const token = await refreshPromise;
+        originalRequest.headers.Authorization = `Bearer ${token}`;
         return api(originalRequest);
       } catch (refreshError) {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(REFRESH_TOKEN_KEY);
-        window.location.href = '/login';
+        clearSession();
+        if (window.location.pathname !== '/login') window.location.href = '/login';
         return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
       }
     }
 

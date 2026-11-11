@@ -1,5 +1,4 @@
-﻿import type { BaseEntity } from './common.types';
-
+﻿
 export interface CompanySettings {
   name: string;
   legalName?: string;

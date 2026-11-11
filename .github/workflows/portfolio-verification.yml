@@ -1,0 +1,80 @@
+name: Portfolio verification
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend build and unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - name: Restore
+        run: dotnet restore backend/EnterpriseManagement.sln
+      - name: Build
+        run: dotnet build backend/EnterpriseManagement.sln --no-restore --configuration Release
+      - name: Unit tests
+        run: dotnet test backend/test/EnterpriseManagement.UnitTests/EnterpriseManagement.UnitTests.csproj --no-restore --configuration Release --logger "console;verbosity=normal"
+
+  frontend:
+    name: Frontend typecheck lint and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      # No lockfile exists in the current repository. Use npm install until
+      # a reviewed lockfile is committed, then switch to npm ci.
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build
+        run: npm run build
+      - name: Lint (strict, zero warnings)
+        if: always()
+        run: npm run lint
+
+  containers:
+    name: Docker image builds and Compose validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Compose configuration
+        env:
+          SA_PASSWORD: placeholder-only-not-for-deployment
+          ConnectionStrings__DefaultConnection: Server=sqlserver;Database=EnterpriseDb;User Id=sa;Password=placeholder-only-not-for-deployment;TrustServerCertificate=True
+          JWT__Secret: placeholder-only-not-for-deployment-with-32-bytes
+          JWT__Issuer: https://example.invalid
+          JWT__Audience: https://example.invalid
+          BootstrapAdmin__Password: placeholder-only-not-for-deployment
+          CORS_ALLOWED_ORIGIN: https://example.invalid
+        run: docker compose -f deployment/docker-compose.yml config --quiet
+      - name: Build backend container
+        run: docker build -f deployment/Dockerfile.backend -t enterprise-backend:ci .
+      - name: Build frontend container
+        run: docker build -f deployment/Dockerfile.frontend -t enterprise-frontend:ci frontend
+      - name: Validate nginx configuration with temporary CI certificate
+        run: |
+          mkdir -p "${{ runner.temp }}/nginx-ssl"
+          openssl req -x509 -nodes -newkey rsa:2048 -days 1 -subj "/CN=localhost" \
+            -keyout "${{ runner.temp }}/nginx-ssl/privkey.pem" \
+            -out "${{ runner.temp }}/nginx-ssl/fullchain.pem" >/dev/null 2>&1
+          docker run --rm \
+            -v "${{ github.workspace }}/deployment/nginx.conf:/etc/nginx/nginx.conf:ro" \
+            -v "${{ runner.temp }}/nginx-ssl:/etc/nginx/ssl:ro" \
+            nginx:alpine nginx -t

@@ -78,7 +78,6 @@ export function UserForm({ isOpen, user, roles, onClose, onSaved }: UserFormProp
 
   const {
     register,
-    handleSubmit,
     formState: { errors, isSubmitting },
   } = methods;
 

@@ -4,7 +4,7 @@ import { Plus, Pencil, Trash2, Package, Barcode, AlertTriangle } from 'lucide-re
 import { productService } from '../../services/product.service';
 import { categoryService } from '../../services/category.service';
 import { useNotification } from '../../hooks/useNotification';
-import { getErrorMessage } from '../../services/api';
+
 import { useDebounce } from '../../hooks/useDebounce';
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/ui/Card';

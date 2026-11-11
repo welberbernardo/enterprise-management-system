@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Plus, Pencil, Trash2, FolderTree } from 'lucide-react';
 import { categoryService } from '../../services/category.service';
 import { useNotification } from '../../hooks/useNotification';
-import { getErrorMessage } from '../../services/api';
 import { useDebounce } from '../../hooks/useDebounce';
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/ui/Card';

@@ -32,7 +32,7 @@ public class AuthController : BaseController
 
     /// <summary>Registers a new user.</summary>
     [HttpPost("register")]
-    [AllowAnonymous]
+    [RequirePermission("Users", "Manage")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<LoginResponse>>> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
@@ -74,7 +74,7 @@ public class AuthController : BaseController
 
     /// <summary>Changes the current user's password.</summary>
     [HttpPost("change-password")]
-    [RequirePermission("Users", "Manage")]
+    [Authorize]
     public async Task<ActionResult<ApiResponse<bool>>> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken cancellationToken)
     {
         if (CurrentUserId is null) return Unauthorized();
@@ -84,6 +84,7 @@ public class AuthController : BaseController
 
     /// <summary>Returns the current user's profile.</summary>
     [HttpGet("profile")]
+    [Authorize]
     public async Task<ActionResult<ApiResponse<UserProfileDto>>> GetProfile(CancellationToken cancellationToken)
     {
         if (CurrentUserId is null) return Unauthorized();
@@ -93,6 +94,7 @@ public class AuthController : BaseController
 
     /// <summary>Updates the current user's profile.</summary>
     [HttpPut("profile")]
+    [Authorize]
     public async Task<ActionResult<ApiResponse<UserProfileDto>>> UpdateProfile([FromBody] UpdateUserDto request, CancellationToken cancellationToken)
     {
         if (CurrentUserId is null) return Unauthorized();

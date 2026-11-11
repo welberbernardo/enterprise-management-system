@@ -102,6 +102,45 @@ public class AuthServiceTests
     }
 
     [Fact]
+    public async Task RefreshTokenAsync_RejectsReplayAfterRotation()
+    {
+        var (service, _) = SeedAdmin();
+        var login = await service.LoginAsync(new LoginRequest { Username = "admin", Password = "Admin@123" });
+        var first = await service.RefreshTokenAsync(new RefreshTokenRequest { RefreshToken = login!.RefreshToken });
+        first.Should().NotBeNull();
+        first!.RefreshToken.Should().NotBe(login.RefreshToken);
+
+        var replay = await service.RefreshTokenAsync(new RefreshTokenRequest { RefreshToken = login.RefreshToken });
+        replay.Should().BeNull();
+
+        var second = await service.RefreshTokenAsync(new RefreshTokenRequest { RefreshToken = first.RefreshToken });
+        second.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task UpdateProfileAsync_DoesNotChangeRoleOrActivation()
+    {
+        var (service, userId) = SeedAdmin();
+        var existing = _fixture.Context.Users.Single(u => u.Id == userId);
+        var originalRoleId = existing.RoleId;
+
+        var result = await service.UpdateProfileAsync(userId, new UpdateUserDto
+        {
+            Email = "updated@example.com",
+            FirstName = "Updated",
+            LastName = "User",
+            RoleId = originalRoleId + 999,
+            IsActive = false
+        });
+
+        result.Should().NotBeNull();
+        var saved = _fixture.Context.Users.Single(u => u.Id == userId);
+        saved.RoleId.Should().Be(originalRoleId);
+        saved.IsActive.Should().BeTrue();
+        saved.Email.Should().Be("updated@example.com");
+    }
+
+    [Fact]
     public async Task ChangePasswordAsync_UpdatesPassword()
     {
         var (service, userId) = SeedAdmin();

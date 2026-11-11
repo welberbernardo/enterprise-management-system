@@ -2,7 +2,7 @@
 import { BarChart3 } from 'lucide-react';
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/ui/Card';
-import { reportTypes } from './ReportPage';
+import { reportTypes } from './reportTypes';
 
 export function Reports() {
   const navigate = useNavigate();

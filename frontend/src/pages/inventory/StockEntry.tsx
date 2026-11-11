@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+﻿import { useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -43,7 +43,7 @@ export function StockEntry({ isOpen, onClose, onSaved }: StockEntryProps) {
     if (isOpen) methods.reset({ productId: '', quantity: 1, unitCost: 0, reason: 'PURCHASE', notes: '' });
   }, [isOpen, methods]);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = methods;
+  const { register, formState: { errors, isSubmitting } } = methods;
 
   const onSubmit = async (values: FormValues) => {
     try {

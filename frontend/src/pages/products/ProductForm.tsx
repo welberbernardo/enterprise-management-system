@@ -72,7 +72,7 @@ export function ProductForm({ isOpen, product, onClose, onSaved }: ProductFormPr
     }
   }, [isOpen, product, methods]);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = methods;
+  const { register, formState: { errors, isSubmitting } } = methods;
 
   const onFile = async (file: File) => {
     setUploading(true);

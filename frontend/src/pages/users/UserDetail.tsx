@@ -2,8 +2,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Mail, Phone, Shield, Calendar } from 'lucide-react';
 import { userService } from '../../services/user.service';
-import { useNotification } from '../../hooks/useNotification';
-import { getErrorMessage } from '../../services/api';
+
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card, CardHeader } from '../../components/ui/Card';
 import { Avatar } from '../../components/ui/Avatar';
@@ -16,7 +15,7 @@ import { formatDateTime } from '../../utils/formatters';
 
 export function UserDetail() {
   const { id } = useParams<{ id: string }>();
-  const notify = useNotification();
+
 
   const { data: user, isLoading } = useQuery({
     queryKey: ['user', id],

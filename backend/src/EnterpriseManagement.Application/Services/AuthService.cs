@@ -80,6 +80,12 @@ public class AuthService : IAuthService
         var user = await _unitOfWork.Repository<User>().GetByIdAsync(token.UserId, cancellationToken);
         if (user is null || !user.IsActive) return null;
 
+        // A refresh token is single-use. Revoke it before issuing a replacement.
+        // Concurrent refresh requests should additionally be protected by a database concurrency constraint.
+        token.IsRevoked = true;
+        repo.Update(token);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
         await _auditService.LogAsync(user.Id, "RefreshToken", nameof(RefreshToken), token.Id.ToString(), ipAddress: null, cancellationToken: cancellationToken);
         return await BuildLoginResponseAsync(user, null, null, cancellationToken);
     }
@@ -138,8 +144,8 @@ public class AuthService : IAuthService
         user.FirstName = request.FirstName;
         user.LastName = request.LastName;
         user.Phone = request.Phone;
-        user.RoleId = request.RoleId;
-        user.IsActive = request.IsActive;
+        // Self-service profile changes must never modify roles or account status.
+        // Role and activation changes belong to privileged user-management operations.
         user.UpdatedAt = DateTime.UtcNow;
         _unitOfWork.Repository<User>().Update(user);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

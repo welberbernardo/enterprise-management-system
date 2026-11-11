@@ -2,8 +2,7 @@
 import { useState } from 'react';
 import { Clock } from 'lucide-react';
 import { auditService } from '../../services/audit.service';
-import { useNotification } from '../../hooks/useNotification';
-import { getErrorMessage } from '../../services/api';
+
 import { useDebounce } from '../../hooks/useDebounce';
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/ui/Card';
@@ -13,7 +12,6 @@ import { formatRelativeTime } from '../../utils/formatters';
 import type { ActivityItem } from '../../types/audit.types';
 
 export function ActivityHistory() {
-  const notify = useNotification();
   const [search, setSearch] = useState('');
   const debounced = useDebounce(search, 400);
 

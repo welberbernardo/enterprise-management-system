@@ -16,7 +16,15 @@ builder.Host.UseSerilog((context, config) =>
 
 // Configuration binding
 var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()
-    ?? new JwtSettings { Secret = "SuperSecretKeyForJwtSigningThatIsAtLeast32BytesLong!!" };
+    ?? throw new InvalidOperationException("JWT configuration is required.");
+
+if (string.IsNullOrWhiteSpace(jwtSettings.Secret) ||
+    System.Text.Encoding.UTF8.GetByteCount(jwtSettings.Secret) < 32 ||
+    string.IsNullOrWhiteSpace(jwtSettings.Issuer) ||
+    string.IsNullOrWhiteSpace(jwtSettings.Audience))
+{
+    throw new InvalidOperationException("JWT secret (at least 32 UTF-8 bytes), issuer and audience must be configured securely.");
+}
 
 // Layers
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -25,7 +33,13 @@ builder.Services.AddApplication();
 // Authorization (permission policies + handler)
 builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    // Require authentication by default; explicitly annotated public actions remain accessible.
+    options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder("Bearer")
+        .RequireAuthenticatedUser()
+        .Build();
+});
 
 // JWT Authentication
 builder.Services.AddAuthentication("Bearer")
@@ -46,15 +60,17 @@ builder.Services.AddAuthentication("Bearer")
     });
 
 // CORS
-var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? new[] { "*" };
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+if (allowedOrigins.Any(origin => origin == "*" || !Uri.TryCreate(origin, UriKind.Absolute, out var uri) ||
+    (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)))
+{
+    throw new InvalidOperationException("CORS origins must be explicit absolute HTTP(S) URLs; wildcard origins are forbidden.");
+}
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Default", policy =>
     {
-        if (allowedOrigins.Contains("*"))
-            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-        else
-            policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod();
+        policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod();
     });
 });
 
@@ -105,12 +121,15 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await DatabaseInitializer.SeedAsync(db);
+    await DatabaseInitializer.SeedAsync(db, builder.Configuration);
 }
 
 // Middleware pipeline
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseCors("Default");
 app.UseResponseCompression();
@@ -119,6 +138,7 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGet("/health", () => Results.Ok(new { status = "ok" })).AllowAnonymous();
 app.MapControllers();
 
 app.Run();

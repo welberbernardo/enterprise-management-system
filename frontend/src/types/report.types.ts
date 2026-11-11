@@ -1,5 +1,4 @@
-﻿import type { BaseEntity } from './common.types';
-
+﻿
 export type ReportType =
   | 'SALES'
   | 'INVENTORY'

@@ -7,16 +7,12 @@ services:
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: ${SA_PASSWORD}
-      MSSQL_DB: ${DB_NAME:-EnterpriseDb}
-    ports:
-      - "1433:1433"
     volumes:
       - sqlserver_data:/var/opt/mssql
-      - ./init-db:/init-db:ro
     networks:
       - enterprise-network
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P \"$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' || exit 1"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -C -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -32,8 +28,8 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: ../Dockerfile.backend
+      context: ..
+      dockerfile: deployment/Dockerfile.backend
     image: ${PROJECT_NAME:-enterprise}-backend:latest
     container_name: ${PROJECT_NAME:-enterprise}-backend
     environment:
@@ -42,13 +38,13 @@ services:
       HTTPS_PORT: "443"
       ConnectionStrings__DefaultConnection: ${ConnectionStrings__DefaultConnection}
       JWT__Secret: ${JWT__Secret}
+      BootstrapAdmin__Password: ${BootstrapAdmin__Password:?Set a strong bootstrap admin password}
+      Cors__AllowedOrigins__0: ${CORS_ALLOWED_ORIGIN:?Set the frontend origin}
       JWT__Issuer: ${JWT__Issuer}
       JWT__Audience: ${JWT__Audience}
       JWT__AccessTokenExpiryMinutes: ${JWT__AccessTokenExpiryMinutes:-60}
       JWT__RefreshTokenExpiryDays: ${JWT__RefreshTokenExpiryDays:-7}
       Serilog__WriteTo__0__Args__serverUrl: ${Serilog__WriteTo__0__Args__serverUrl:-http://localhost:5341}
-    ports:
-      - "8080:8080"
     volumes:
       - backend_logs:/app/logs
     depends_on:
@@ -56,12 +52,6 @@ services:
         condition: service_healthy
     networks:
       - enterprise-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 40s
     restart: unless-stopped
     deploy:
       resources:
@@ -73,14 +63,12 @@ services:
 
   frontend:
     build:
-      context: ./frontend
-      dockerfile: ../Dockerfile.frontend
+      context: ../frontend
+      dockerfile: ../deployment/Dockerfile.frontend
       args:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
     image: ${PROJECT_NAME:-enterprise}-frontend:latest
     container_name: ${PROJECT_NAME:-enterprise}-frontend
-    ports:
-      - "3000:3000"
     depends_on:
       - backend
     networks:
@@ -107,7 +95,6 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - nginx_conf:/etc/nginx/conf.d
       - ssl_certs:/etc/nginx/ssl
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -140,7 +127,5 @@ volumes:
     name: ${PROJECT_NAME:-enterprise}-sqlserver-data
   backend_logs:
     name: ${PROJECT_NAME:-enterprise}-backend-logs
-  nginx_conf:
-    name: ${PROJECT_NAME:-enterprise}-nginx-conf
   ssl_certs:
     name: ${PROJECT_NAME:-enterprise}-ssl-certs

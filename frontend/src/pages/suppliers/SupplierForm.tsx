@@ -55,7 +55,7 @@ export function SupplierForm({ isOpen, supplier, onClose, onSaved }: SupplierFor
     }
   }, [isOpen, supplier, methods]);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = methods;
+  const { register, formState: { errors, isSubmitting } } = methods;
 
   const onSubmit = async (values: FormValues) => {
     try {

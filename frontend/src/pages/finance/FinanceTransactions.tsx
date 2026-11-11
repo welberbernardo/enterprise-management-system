@@ -6,8 +6,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Pagination } from '../../components/ui/Pagination';
 import { Spinner } from '../../components/ui/Spinner';
 import { SearchBar } from '../../components/forms/SearchBar';
-import { useNotification } from '../../hooks/useNotification';
-import { getErrorMessage } from '../../services/api';
+
 import { financeService } from '../../services/finance.service';
 import { useDebounce } from '../../hooks/useDebounce';
 import { PAGINATION } from '../../utils/constants';
@@ -20,7 +19,6 @@ interface FinanceTransactionsProps {
 }
 
 export function FinanceTransactions({ type, title }: FinanceTransactionsProps) {
-  const notify = useNotification();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(PAGINATION.DEFAULT_PAGE);
   const debounced = useDebounce(search, 400);

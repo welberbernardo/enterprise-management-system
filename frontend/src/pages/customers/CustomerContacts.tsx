@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { UserPlus, Trash2, Mail, Phone } from 'lucide-react';
 import { customerService } from '../../services/customer.service';
 import { useNotification } from '../../hooks/useNotification';
-import { getErrorMessage } from '../../services/api';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';

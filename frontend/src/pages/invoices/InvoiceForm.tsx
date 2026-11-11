@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+﻿import { useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -48,7 +48,7 @@ export function InvoiceForm({ isOpen, invoice, customers, onClose, onSaved }: In
     defaultValues: { customerId: '', issueDate: new Date().toISOString().split('T')[0], dueDate: '', tax: 0, notes: '', items: [{ description: '', quantity: 1, unitPrice: 0 }] },
   });
 
-  const { control, register, handleSubmit, watch, formState: { errors, isSubmitting } } = methods;
+  const { control, register, watch, formState: { errors, isSubmitting } } = methods;
   const { fields, append, remove } = useFieldArray({ control, name: 'items' });
 
   useEffect(() => {
