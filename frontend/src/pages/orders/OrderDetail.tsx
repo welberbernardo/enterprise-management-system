@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { orderService } from '../../services/order.service';
 import { useNotification } from '../../hooks/useNotification';
-import { getErrorMessage } from '../../services/api';
+
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card, CardHeader } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -16,7 +16,7 @@ import type { OrderItem } from '../../types/order.types';
 
 export function OrderDetail() {
   const { id } = useParams<{ id: string }>();
-  const notify = useNotification();
+
 
   const { data: order, isLoading } = useQuery({
     queryKey: ['order', id],
