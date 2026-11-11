@@ -6,7 +6,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Pagination } from '../../components/ui/Pagination';
 import { Spinner } from '../../components/ui/Spinner';
 import { SearchBar } from '../../components/forms/SearchBar';
-import { useNotification } from '../../hooks/useNotification';
+
 import { financeService } from '../../services/finance.service';
 import { useDebounce } from '../../hooks/useDebounce';
 import { PAGINATION } from '../../utils/constants';
