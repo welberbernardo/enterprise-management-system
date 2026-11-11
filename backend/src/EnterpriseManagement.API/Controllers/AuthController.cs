@@ -74,7 +74,7 @@ public class AuthController : BaseController
 
     /// <summary>Changes the current user's password.</summary>
     [HttpPost("change-password")]
-    [RequirePermission("Users", "Manage")]
+    [Authorize]
     public async Task<ActionResult<ApiResponse<bool>>> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken cancellationToken)
     {
         if (CurrentUserId is null) return Unauthorized();
