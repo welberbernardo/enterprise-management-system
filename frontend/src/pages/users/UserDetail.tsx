@@ -2,7 +2,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Mail, Phone, Shield, Calendar } from 'lucide-react';
 import { userService } from '../../services/user.service';
-import { useNotification } from '../../hooks/useNotification';
 
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card, CardHeader } from '../../components/ui/Card';
