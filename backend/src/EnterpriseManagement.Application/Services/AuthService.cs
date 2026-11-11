@@ -114,9 +114,23 @@ public class AuthService : IAuthService
         if (user is null || !BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
             return false;
 
+        if (string.IsNullOrWhiteSpace(request.NewPassword) || request.NewPassword.Length < 12 ||
+            request.NewPassword != request.ConfirmPassword ||
+            BCrypt.Net.BCrypt.Verify(request.NewPassword, user.PasswordHash))
+            return false;
+
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
         user.UpdatedAt = DateTime.UtcNow;
         _unitOfWork.Repository<User>().Update(user);
+        // Revoke outstanding refresh tokens after a password change.
+        var refreshTokens = await _unitOfWork.Repository<RefreshToken>().Query()
+            .Where(t => t.UserId == userId && !t.IsRevoked)
+            .ToListAsync(cancellationToken);
+        foreach (var token in refreshTokens)
+        {
+            token.IsRevoked = true;
+            _unitOfWork.Repository<RefreshToken>().Update(token);
+        }
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return true;
     }
