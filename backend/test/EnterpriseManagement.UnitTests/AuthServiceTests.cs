@@ -102,6 +102,29 @@ public class AuthServiceTests
     }
 
     [Fact]
+    public async Task UpdateProfileAsync_DoesNotChangeRoleOrActivation()
+    {
+        var (service, userId) = SeedAdmin();
+        var existing = _fixture.Context.Users.Single(u => u.Id == userId);
+        var originalRoleId = existing.RoleId;
+
+        var result = await service.UpdateProfileAsync(userId, new UpdateUserDto
+        {
+            Email = "updated@example.com",
+            FirstName = "Updated",
+            LastName = "User",
+            RoleId = originalRoleId + 999,
+            IsActive = false
+        });
+
+        result.Should().NotBeNull();
+        var saved = _fixture.Context.Users.Single(u => u.Id == userId);
+        saved.RoleId.Should().Be(originalRoleId);
+        saved.IsActive.Should().BeTrue();
+        saved.Email.Should().Be("updated@example.com");
+    }
+
+    [Fact]
     public async Task ChangePasswordAsync_UpdatesPassword()
     {
         var (service, userId) = SeedAdmin();
