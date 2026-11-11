@@ -1,7 +1,6 @@
 ﻿import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { permissionService } from '../../services/permission.service';
-import { useNotification } from '../../hooks/useNotification';
 
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/ui/Card';
