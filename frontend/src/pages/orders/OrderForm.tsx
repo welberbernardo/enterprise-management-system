@@ -52,7 +52,7 @@ export function OrderForm({ isOpen, order, customers, onClose, onSaved }: OrderF
     defaultValues: { customerId: '', date: new Date().toISOString().split('T')[0], discount: 0, notes: '', items: [{ productId: '', quantity: 1, unitPrice: 0, discount: 0 }] },
   });
 
-  const { control, register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = methods;
+  const { control, register, watch, setValue, formState: { errors, isSubmitting } } = methods;
   const { fields, append, remove } = useFieldArray({ control, name: 'items' });
 
   useEffect(() => {
