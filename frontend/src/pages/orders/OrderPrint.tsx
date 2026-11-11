@@ -2,13 +2,13 @@
 import { useParams } from 'react-router-dom';
 import { orderService } from '../../services/order.service';
 import { useNotification } from '../../hooks/useNotification';
-import { getErrorMessage } from '../../services/api';
+
 import { Spinner } from '../../components/ui/Spinner';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 
 export function OrderPrint() {
   const { id } = useParams<{ id: string }>();
-  const notify = useNotification();
+
 
   const { data: order, isLoading } = useQuery({
     queryKey: ['order-print', id],
