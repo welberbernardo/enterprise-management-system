@@ -1,7 +1,5 @@
 import { http } from './api';
 import type {
-  AuditLog,
-  ActivityItem,
   AuditFilters,
   AuditLogsResponse,
   ActivityResponse,
