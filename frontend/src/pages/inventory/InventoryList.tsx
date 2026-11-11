@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { LogIn, LogOut } from 'lucide-react';
 import { inventoryService } from '../../services/inventory.service';
-import { productService } from '../../services/product.service';
+
 import { useNotification } from '../../hooks/useNotification';
 import { getErrorMessage } from '../../services/api';
 import { useDebounce } from '../../hooks/useDebounce';
