@@ -4,7 +4,7 @@ import { Card } from '../../components/ui/Card';
 import { Spinner } from '../../components/ui/Spinner';
 import { DateRangePicker } from '../../components/forms/DateRangePicker';
 import { AreaChart } from '../../components/charts/AreaChart';
-import { useNotification } from '../../hooks/useNotification';
+
 import { financeService } from '../../services/finance.service';
 import { PageHeader } from '../../components/common/PageHeader';
 
