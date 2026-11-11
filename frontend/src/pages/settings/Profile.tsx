@@ -25,7 +25,7 @@ const profileSchema = z.object({
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password required'),
-  newPassword: z.string().min(12, 'At least 12 characters'),
+  newPassword: z.string().min(12, 'At least 12 characters').max(128, 'At most 128 characters'),
   confirmPassword: z.string(),
 }).refine((d) => d.newPassword === d.confirmPassword, { message: 'Passwords do not match', path: ['confirmPassword'] });
 
