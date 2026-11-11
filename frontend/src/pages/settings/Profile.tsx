@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -25,7 +25,7 @@ const profileSchema = z.object({
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password required'),
-  newPassword: z.string().min(8, 'At least 8 characters'),
+  newPassword: z.string().min(12, 'At least 12 characters'),
   confirmPassword: z.string(),
 }).refine((d) => d.newPassword === d.confirmPassword, { message: 'Passwords do not match', path: ['confirmPassword'] });
 
@@ -56,7 +56,7 @@ export function Profile() {
   const onPassword = async (values: PasswordValues) => {
     try {
       await authService.changePassword(values);
-      notify.success('Password changed');
+      notify.success('Password changed. Sign in again on your other devices.');
       passwordMethods.reset();
     } catch (e) {
       notify.error(getErrorMessage(e));
