@@ -96,3 +96,10 @@ Do not merge or publish solely based on static edits. Require successful build a
 - Changed `POST /api/auth/change-password` to require an authenticated user rather than an administrative Users.Manage permission; the service verifies the current password.
 - Removed unused SQL Server initialization mount and unsupported `MSSQL_DB` environment variable from Compose; EF Core migrations are invoked at API startup.
 - **Outstanding:** password reset endpoint is absent although a frontend reset page exists; never claim that reset is functional. Concurrent refresh-token reuse requires atomic database-level protection. Full Docker runtime, TLS provisioning and integration tests remain unverified.
+
+## Docker CI investigation (2026-11-11)
+
+- Run [43051049792](https://github.com/welberbernardo/enterprise-management-system/actions/runs/43051049792) completed successfully for backend tests, frontend typecheck/build/lint, Docker Compose configuration and both backend/frontend Docker image builds.
+- The only failing step was Nginx configuration validation (exit 127): the CI command attempted to invoke `openssl` inside `nginx:alpine`, where it was unavailable.
+- The workflow now generates a temporary self-signed certificate on the GitHub Actions runner and mounts it read-only for `nginx -t`. Await the next completed CI run before claiming this step passes.
+- Docker images building successfully does **not** demonstrate that the application, database, proxy, and HTTPS stack start and function together.
