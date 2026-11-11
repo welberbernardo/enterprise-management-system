@@ -39,3 +39,19 @@ Avoid claiming deployment, test coverage, security certification or production r
 - Removed the hard-coded bootstrap administrator password. Fresh database seeding now requires `BootstrapAdmin__Password` of at least 16 characters. Existing seeded administrators are **not** automatically reset and must be rotated separately.
 - These changes are not a substitute for scanning Git history, rotating credentials or running the build and tests.
 - **Additional finding:** the original database initializer granted all permissions to Administrator, Manager and Staff roles. The preparation branch now seeds reduced permissions for Manager and Staff on **new databases only**. Existing databases need a separately reviewed migration, and each endpoint still needs authorization tests.
+
+## Authorization findings and remediation (2026-11-11)
+
+- **Critical:** The anonymous registration endpoint accepted a caller-controlled role ID. The preparation branch now requires the `Users.Manage` permission for registration; existing authenticated user management remains available via `UsersController`. This changes the public signup behavior intentionally.
+- **Critical:** Self-service profile update accepted role and active-status fields and wrote them to the user record. The preparation branch now ignores these fields in `AuthService.UpdateProfileAsync`; administrative user management remains separate. The request DTO still contains these fields and should be split into a dedicated profile DTO in a follow-up change.
+- **Important:** The password reset flow generates a token but does not persist a token verification record or expose a verified reset-completion flow. Do not claim password reset is functional or secure until completed.
+- **Important:** File upload accepts arbitrary extensions and does not inspect content. Restrict types, enforce per-file limits, scan uploads, and keep files outside publicly served paths before production use.
+- **Important:** Existing database roles and bootstrap credentials are not automatically migrated or rotated.
+
+## Automated verification
+
+A pull-request workflow has been added at `.github/workflows/portfolio-verification.yml` for .NET build/unit tests and React typecheck/lint/build. **No successful CI run has been observed.** GitHub may require workflow approval or default-branch registration before the new workflow can run. The repository currently lacks an npm lockfile; the workflow temporarily uses `npm install` rather than reproducible `npm ci`.
+
+## Release gate
+
+Do not merge or publish solely based on static edits. Require successful build and test runs, manual authorization regression tests (anonymous registration, self-role change, refresh and revoke), verified secret rotation, container checks, and permission review.
