@@ -51,7 +51,6 @@ export function RoleForm({ isOpen, role, permissions, onClose, onSaved }: RoleFo
 
   const {
     register,
-    handleSubmit,
     setValue,
     watch,
     formState: { errors, isSubmitting },
