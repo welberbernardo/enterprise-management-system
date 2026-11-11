@@ -63,13 +63,13 @@ public class AuthController : BaseController
         return ok ? Ok(ApiResponse<bool>.Ok(true, "Token revoked.")) : BadRequest(ApiResponse<bool>.Fail("Token not found."));
     }
 
-    /// <summary>Initiates a password reset for the given email.</summary>
+    /// <summary>Password reset is unavailable until a persistent, expiring, single-use token flow is implemented.</summary>
     [HttpPost("forgot-password")]
     [AllowAnonymous]
-    public async Task<ActionResult<ApiResponse<bool>>> ForgotPassword([FromBody] ForgotPasswordRequest request, CancellationToken cancellationToken)
+    public ActionResult<ApiResponse<bool>> ForgotPassword()
     {
-        await _authService.ForgotPasswordAsync(request, cancellationToken);
-        return Ok(ApiResponse<bool>.Ok(true, "If the email exists, a reset link was sent."));
+        return StatusCode(StatusCodes.Status503ServiceUnavailable,
+            ApiResponse<bool>.Fail("Password recovery is temporarily unavailable. Contact your administrator."));
     }
 
     /// <summary>Changes the current user's password.</summary>
