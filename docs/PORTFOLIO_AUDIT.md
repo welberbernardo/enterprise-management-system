@@ -64,3 +64,11 @@ Do not merge or publish solely based on static edits. Require successful build a
 - Important: Existing `AuthServiceTests` still use a fixed test-only password and test signing key; these are not production credentials, but secret scanners may flag them.
 - Docker deployment is still not corrected: Compose build contexts, Dockerfile paths and runtime health checks need a separate verified fix.
 - CI is not confirmed to have run. A successful workflow and manual review are release prerequisites.
+
+## CI observations (2026-11-11)
+
+- GitHub Actions run `43030388009` completed with backend restore, build and unit tests passing; frontend installation and TypeScript checks passing.
+- Frontend ESLint reported **0 errors and 69 warnings**. The `npm run lint` script uses `--max-warnings 0`, so this remains a failing quality gate. Do not suppress the warnings or claim the workflow is green.
+- The React production build was skipped because lint previously ran before build. CI now runs the build before strict lint so both outcomes can be observed independently. Await a run of the updated workflow.
+- Dockerfile and Compose changes are untested in containers. The frontend lacks a committed npm lockfile, so installs are not reproducible yet. Review and commit a generated lockfile, then switch CI and Docker to `npm ci`.
+- Do not publish or merge before security regression tests, integration tests and secret/history review.
