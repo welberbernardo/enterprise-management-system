@@ -16,7 +16,15 @@ builder.Host.UseSerilog((context, config) =>
 
 // Configuration binding
 var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()
-    ?? new JwtSettings { Secret = "SuperSecretKeyForJwtSigningThatIsAtLeast32BytesLong!!" };
+    ?? throw new InvalidOperationException("JWT configuration is required.");
+
+if (string.IsNullOrWhiteSpace(jwtSettings.Secret) ||
+    System.Text.Encoding.UTF8.GetByteCount(jwtSettings.Secret) < 32 ||
+    string.IsNullOrWhiteSpace(jwtSettings.Issuer) ||
+    string.IsNullOrWhiteSpace(jwtSettings.Audience))
+{
+    throw new InvalidOperationException("JWT secret (at least 32 UTF-8 bytes), issuer and audience must be configured securely.");
+}
 
 // Layers
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -46,15 +54,17 @@ builder.Services.AddAuthentication("Bearer")
     });
 
 // CORS
-var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? new[] { "*" };
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+if (allowedOrigins.Any(origin => origin == "*" || !Uri.TryCreate(origin, UriKind.Absolute, out var uri) ||
+    (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)))
+{
+    throw new InvalidOperationException("CORS origins must be explicit absolute HTTP(S) URLs; wildcard origins are forbidden.");
+}
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Default", policy =>
     {
-        if (allowedOrigins.Contains("*"))
-            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-        else
-            policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod();
+        policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod();
     });
 });
 
@@ -109,8 +119,11 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Middleware pipeline
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseCors("Default");
 app.UseResponseCompression();
