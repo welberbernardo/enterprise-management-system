@@ -29,7 +29,7 @@ Authentication and permissions, users and roles, customers, suppliers, products,
 ## Local development (verification required)
 
 1. Clone **this repository** and configure a local SQL Server instance.
-2. Supply database connection and JWT signing settings using local secrets or environment variables. Never commit real credentials.
+2. Supply database connection and JWT signing settings using local secrets or environment variables. Required keys include `Jwt__Secret` (at least 32 UTF-8 bytes) and, for a fresh database, `BootstrapAdmin__Password` (at least 16 characters). Never commit real credentials. Never commit real credentials.
 3. From `backend`, run `dotnet restore EnterpriseManagement.sln`, then `dotnet build EnterpriseManagement.sln`.
 4. From `backend`, run `dotnet test EnterpriseManagement.sln`.
 5. From `frontend`, run `npm install`, `npm run typecheck`, `npm run lint` and `npm run build`.
@@ -39,7 +39,7 @@ Authentication and permissions, users and roles, customers, suppliers, products,
 
 ## Security and deployment
 
-Do not reuse JWT keys or example credentials. Before deploying, remove hard-coded JWT fallback secrets, restrict CORS, protect API documentation, validate authorization, and review committed configuration and Git history for secrets. See `docs/PORTFOLIO_AUDIT.md`.
+Do not reuse JWT keys or example credentials. The preparation branch removes the known hard-coded JWT fallback and bootstrap password, requires explicit CORS origins and limits Swagger to Development. These changes have not been build-tested. Before deploying, validate authorization and review committed configuration and Git history for secrets. See `docs/PORTFOLIO_AUDIT.md`.
 
 ## Tests and screenshots
 
