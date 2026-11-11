@@ -1,11 +1,15 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using EnterpriseManagement.Infrastructure.Data;
 
 #nullable disable
 
 namespace EnterpriseManagement.Infrastructure.Migrations
 {
     /// <inheritdoc />
+    [DbContext(typeof(ApplicationDbContext))]
+    [Migration("20260717162134_InitialCreate")]
     public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
