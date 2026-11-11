@@ -55,3 +55,12 @@ A pull-request workflow has been added at `.github/workflows/portfolio-verificat
 ## Release gate
 
 Do not merge or publish solely based on static edits. Require successful build and test runs, manual authorization regression tests (anonymous registration, self-role change, refresh and revoke), verified secret rotation, container checks, and permission review.
+
+## Additional hardening (2026-11-11)
+
+- Added a default authenticated-user fallback policy to the API. Explicit `[AllowAnonymous]` endpoints remain public; audit them individually.
+- Upload endpoint now rejects empty files, files over 5 MiB and extensions outside PDF/JPG/JPEG/PNG. This is **not** content-type or magic-byte validation and does not replace antivirus scanning or a secure object storage design.
+- Added a unit regression test verifying that profile updates cannot change the caller's role or activation status. The test has **not** been executed.
+- Important: Existing `AuthServiceTests` still use a fixed test-only password and test signing key; these are not production credentials, but secret scanners may flag them.
+- Docker deployment is still not corrected: Compose build contexts, Dockerfile paths and runtime health checks need a separate verified fix.
+- CI is not confirmed to have run. A successful workflow and manual review are release prerequisites.
