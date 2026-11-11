@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Mail, Phone, MapPin } from 'lucide-react';
 import { customerService } from '../../services/customer.service';
-import { useNotification } from '../../hooks/useNotification';
+
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
