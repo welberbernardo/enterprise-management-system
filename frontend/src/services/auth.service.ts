@@ -10,7 +10,7 @@ import type {
 
 export const authService = {
   async login(payload: LoginRequest): Promise<AuthResponse> {
-    const response = await http.post<any>('/auth/login', payload);
+    const response = await http.post<AuthResponse>('/auth/login', payload);
     return {
       accessToken: response.accessToken,
       refreshToken: response.refreshToken,
@@ -32,7 +32,7 @@ export const authService = {
     return http.post<void>('/auth/reset-password', payload);
   },
   async getProfile(): Promise<AuthUser> {
-    const profile = await http.get<any>('/auth/profile');
+    const profile = await http.get<AuthUser>('/auth/profile');
     return {
       id: profile.id,
       username: profile.username,
