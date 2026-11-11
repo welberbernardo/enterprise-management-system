@@ -1,6 +1,7 @@
 using EnterpriseManagement.Core.Entities;
 using EnterpriseManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using BCrypt.Net;
 
 namespace EnterpriseManagement.Infrastructure.Data;
@@ -10,7 +11,7 @@ public static class DatabaseInitializer
 {
     private static readonly SemaphoreSlim _seedingLock = new(1, 1);
 
-    public static async Task SeedAsync(ApplicationDbContext context)
+    public static async Task SeedAsync(ApplicationDbContext context, IConfiguration configuration)
     {
         await _seedingLock.WaitAsync();
         try
@@ -74,11 +75,15 @@ public static class DatabaseInitializer
             }
             await context.SaveChangesAsync();
 
+            var adminPassword = configuration["BootstrapAdmin:Password"];
+            if (string.IsNullOrWhiteSpace(adminPassword) || adminPassword.Length < 16)
+                throw new InvalidOperationException("BootstrapAdmin:Password must be configured with at least 16 characters for initial database seeding.");
+
             var admin = new User
             {
                 Username = "admin",
                 Email = "admin@enterprise.com",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(adminPassword),
                 FirstName = "System",
                 LastName = "Administrator",
                 Phone = "+10000000000",
