@@ -33,7 +33,13 @@ builder.Services.AddApplication();
 // Authorization (permission policies + handler)
 builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    // Require authentication by default; explicitly annotated public actions remain accessible.
+    options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder("Bearer")
+        .RequireAuthenticatedUser()
+        .Build();
+});
 
 // JWT Authentication
 builder.Services.AddAuthentication("Bearer")
