@@ -72,3 +72,10 @@ Do not merge or publish solely based on static edits. Require successful build a
 - The React production build was skipped because lint previously ran before build. CI now runs the build before strict lint so both outcomes can be observed independently. Await a run of the updated workflow.
 - Dockerfile and Compose changes are untested in containers. The frontend lacks a committed npm lockfile, so installs are not reproducible yet. Review and commit a generated lockfile, then switch CI and Docker to `npm ci`.
 - Do not publish or merge before security regression tests, integration tests and secret/history review.
+
+## Follow-up fixes (2026-11-11 afternoon)
+
+- Latest completed run examined: `43045527426`, backend build/tests and frontend TypeScript/production build passed; strict ESLint failed with **2 warnings** (React Fast Refresh mixed export in ReportPage and unused useNotification in UserDetail).
+- Split report metadata into `frontend/src/pages/reports/reportTypes.ts` and updated Reports.tsx import; removed unused UserDetail import. Await a successful run for the latest commit.
+- RefreshTokenAsync now revokes a consumed refresh token before minting a new one. **Outstanding:** concurrency-safe atomic token consumption and a regression test for replay/races. This change has not yet been verified by CI.
+- Password-reset flow remains incomplete: generated reset token is not persisted/validated. Do not advertise this feature as secure or complete.
