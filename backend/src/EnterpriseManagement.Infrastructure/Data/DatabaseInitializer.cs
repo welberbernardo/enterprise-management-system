@@ -67,9 +67,26 @@ public static class DatabaseInitializer
             await context.Roles.AddRangeAsync(adminRole, managerRole, staffRole);
             await context.SaveChangesAsync();
 
+            // Least-privilege defaults for newly initialized databases.
+            // Existing databases require a separate, reviewed permission migration.
+            var managerPermissions = new HashSet<string>
+            {
+                "View Users", "View Roles", "View Customers", "Manage Customers",
+                "View Products", "Manage Products", "View Orders", "Manage Orders",
+                "View Reports"
+            };
+            var staffPermissions = new HashSet<string>
+            {
+                "View Customers", "View Products", "View Orders"
+            };
             foreach (var role in new[] { adminRole, managerRole, staffRole })
             {
-                foreach (var perm in permissions)
+                var granted = role == adminRole
+                    ? permissions
+                    : permissions.Where(p => role == managerRole
+                        ? managerPermissions.Contains(p.Name)
+                        : staffPermissions.Contains(p.Name));
+                foreach (var perm in granted)
                 {
                     await context.RolePermissions.AddAsync(new RolePermission
                     {
