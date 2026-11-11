@@ -1,0 +1,48 @@
+name: Portfolio verification
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend build and unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - name: Restore
+        run: dotnet restore backend/EnterpriseManagement.sln
+      - name: Build
+        run: dotnet build backend/EnterpriseManagement.sln --no-restore --configuration Release
+      - name: Unit tests
+        run: dotnet test backend/test/EnterpriseManagement.UnitTests/EnterpriseManagement.UnitTests.csproj --no-restore --configuration Release --logger "console;verbosity=normal"
+
+  frontend:
+    name: Frontend typecheck lint and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      # No lockfile exists in the current repository. Use npm install until
+      # a reviewed lockfile is committed, then switch to npm ci.
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Build
+        run: npm run build
