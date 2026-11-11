@@ -138,8 +138,8 @@ public class AuthService : IAuthService
         user.FirstName = request.FirstName;
         user.LastName = request.LastName;
         user.Phone = request.Phone;
-        user.RoleId = request.RoleId;
-        user.IsActive = request.IsActive;
+        // Self-service profile changes must never modify roles or account status.
+        // Role and activation changes belong to privileged user-management operations.
         user.UpdatedAt = DateTime.UtcNow;
         _unitOfWork.Repository<User>().Update(user);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
