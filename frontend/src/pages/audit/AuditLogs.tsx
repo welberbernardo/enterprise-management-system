@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { auditService } from '../../services/audit.service';
 import { useNotification } from '../../hooks/useNotification';
-import { getErrorMessage } from '../../services/api';
 import { useDebounce } from '../../hooks/useDebounce';
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/ui/Card';
@@ -17,7 +16,6 @@ import { formatDateTime } from '../../utils/formatters';
 import type { AuditLog, AuditFilters } from '../../types/audit.types';
 
 export function AuditLogs() {
-  const notify = useNotification();
   const [filters, setFilters] = useState<AuditFilters>({ search: '', page: PAGINATION.DEFAULT_PAGE, limit: PAGINATION.DEFAULT_LIMIT, action: undefined });
   const debounced = useDebounce(filters.search ?? '', 400);
 
