@@ -88,3 +88,11 @@ Do not merge or publish solely based on static edits. Require successful build a
 - Replaced realistic example passwords and JWT secrets with obvious placeholders in `deployment/.env.example`.
 - **Not validated:** Docker build, Compose startup, SQL Server image healthcheck compatibility, TLS certificates, schema migrations, and end-to-end API/browser integration. The HTTPS nginx server requires externally provisioned `/etc/nginx/ssl/fullchain.pem` and `privkey.pem`; without them it cannot start. Do not deploy this Compose stack as production-ready yet.
 - Refresh token rotation test covers sequential replay, **not atomic concurrent reuse**. Password reset is incomplete; do not advertise it as production-ready.
+
+## Integration hardening (2026-11-11)
+
+- CI now includes Compose configuration validation, backend/frontend Docker image builds, and Nginx configuration syntax check using an ephemeral self-signed test certificate. These jobs were still running when this note was written; no full Docker Compose startup has been verified.
+- Fixed frontend logout to use the implemented `POST /api/auth/revoke` endpoint rather than the nonexistent `/auth/logout` endpoint. Revocation is best effort and local credentials are cleared immediately.
+- Changed `POST /api/auth/change-password` to require an authenticated user rather than an administrative Users.Manage permission; the service verifies the current password.
+- Removed unused SQL Server initialization mount and unsupported `MSSQL_DB` environment variable from Compose; EF Core migrations are invoked at API startup.
+- **Outstanding:** password reset endpoint is absent although a frontend reset page exists; never claim that reset is functional. Concurrent refresh-token reuse requires atomic database-level protection. Full Docker runtime, TLS provisioning and integration tests remain unverified.
