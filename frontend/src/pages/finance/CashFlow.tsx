@@ -5,12 +5,10 @@ import { Spinner } from '../../components/ui/Spinner';
 import { DateRangePicker } from '../../components/forms/DateRangePicker';
 import { AreaChart } from '../../components/charts/AreaChart';
 import { useNotification } from '../../hooks/useNotification';
-import { getErrorMessage } from '../../services/api';
 import { financeService } from '../../services/finance.service';
 import { PageHeader } from '../../components/common/PageHeader';
 
 export function CashFlow() {
-  const notify = useNotification();
   const [range, setRange] = useState({
     startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0],
