@@ -38,4 +38,4 @@ Avoid claiming deployment, test coverage, security certification or production r
 - Replaced permissive CORS fallback with explicit origins and limited Swagger middleware to Development.
 - Removed the hard-coded bootstrap administrator password. Fresh database seeding now requires `BootstrapAdmin__Password` of at least 16 characters. Existing seeded administrators are **not** automatically reset and must be rotated separately.
 - These changes are not a substitute for scanning Git history, rotating credentials or running the build and tests.
-- **Additional finding:** the database initializer currently grants all permissions to Administrator, Manager and Staff roles. Review and correct role-based access before any public deployment.
+- **Additional finding:** the original database initializer granted all permissions to Administrator, Manager and Staff roles. The preparation branch now seeds reduced permissions for Manager and Staff on **new databases only**. Existing databases need a separately reviewed migration, and each endpoint still needs authorization tests.
