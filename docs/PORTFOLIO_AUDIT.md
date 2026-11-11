@@ -103,3 +103,15 @@ Do not merge or publish solely based on static edits. Require successful build a
 - The only failing step was Nginx configuration validation (exit 127): the CI command attempted to invoke `openssl` inside `nginx:alpine`, where it was unavailable.
 - The workflow now generates a temporary self-signed certificate on the GitHub Actions runner and mounts it read-only for `nginx -t`. Await the next completed CI run before claiming this step passes.
 - Docker images building successfully does **not** demonstrate that the application, database, proxy, and HTTPS stack start and function together.
+
+## Verified current status — 2026-11-11 (supersedes earlier historical snapshots)
+
+The entries above are a chronological audit trail. Statements such as "not yet build-tested" and "CI has not run" reflect earlier points in time and are **not the current state**.
+
+- GitHub Actions run [43058882386](https://github.com/welberbernardo/enterprise-management-system/actions/runs/43058882386) passed all three jobs: backend build/unit tests, frontend typecheck/build/strict lint, and Docker image/Compose/Nginx syntax validation.
+- Pull requests #1–#6 have been merged into `master`; PR #6 removed the LocalDB connection string from base `appsettings.json` and requires explicit database configuration. The Development-specific LocalDB configuration remains for local development.
+- Branch `master` has an active ruleset requiring pull requests, resolved conversations and all three status checks; force pushes and deletions are blocked. The workflow also runs on pushes to `master`.
+- The previous forgot-password endpoint did not implement redeemable reset tokens. It now returns 503 and the frontend displays that self-service recovery is unavailable; **password reset is not implemented**.
+- Production Compose now requires a read-only host directory `TLS_CERT_DIR` containing `fullchain.pem` and `privkey.pem`. CI validates configuration with a test-only certificate, not production certificate issuance or renewal.
+- The repository is currently **public**. This audit does not establish that its entire Git history or all dependencies are free of secrets or proprietary material. Review historical commits and rotate any exposed credentials.
+- **Still unverified:** full Docker Compose startup, SQL Server readiness and migrations in a clean environment, authenticated browser/API end-to-end flows, concurrency-safe refresh token consumption, password reset implementation, and comprehensive security testing. Do not represent this as a production-certified application.
