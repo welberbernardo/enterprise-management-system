@@ -59,7 +59,7 @@ export function CustomerForm({ isOpen, customer, onClose, onSaved }: CustomerFor
     }
   }, [isOpen, customer, methods]);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = methods;
+  const { register, formState: { errors, isSubmitting } } = methods;
 
   const onSubmit = async (values: FormValues) => {
     try {
