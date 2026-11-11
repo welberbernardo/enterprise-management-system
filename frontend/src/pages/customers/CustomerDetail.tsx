@@ -4,7 +4,6 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Mail, Phone, MapPin } from 'lucide-react';
 import { customerService } from '../../services/customer.service';
 import { useNotification } from '../../hooks/useNotification';
-import { getErrorMessage } from '../../services/api';
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -18,7 +17,6 @@ import { CustomerContacts } from './CustomerContacts';
 
 export function CustomerDetail() {
   const { id } = useParams<{ id: string }>();
-  const notify = useNotification();
   const [tab, setTab] = useStateTab();
 
   const { data: customer, isLoading } = useQuery({
