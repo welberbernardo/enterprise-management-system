@@ -199,6 +199,33 @@ public class AuthServiceTests
         ok.Should().BeFalse();
     }
 
+    [Fact]
+    public async Task ChangePasswordAsync_RejectsPasswordsLongerThan128Characters()
+    {
+        var (service, userId) = SeedAdmin();
+        var oversized = new string('A', 129);
+        var changed = await service.ChangePasswordAsync(userId, new ChangePasswordRequest
+        {
+            CurrentPassword = "Admin@123",
+            NewPassword = oversized,
+            ConfirmPassword = oversized
+        });
+        changed.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_RejectsReusingCurrentPassword()
+    {
+        var (service, userId) = SeedAdmin();
+        var changed = await service.ChangePasswordAsync(userId, new ChangePasswordRequest
+        {
+            CurrentPassword = "Admin@123",
+            NewPassword = "Admin@123",
+            ConfirmPassword = "Admin@123"
+        });
+        changed.Should().BeFalse();
+    }
+
 }
 
 internal class FakeEmailService : IEmailService
