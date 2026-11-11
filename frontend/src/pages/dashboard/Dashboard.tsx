@@ -19,7 +19,6 @@ import { Table } from '../../components/ui/Table';
 import { Badge } from '../../components/ui/Badge';
 import { Spinner } from '../../components/ui/Spinner';
 import { formatCurrency, formatDateTime, formatRelativeTime } from '../../utils/formatters';
-import { useNotification } from '../../hooks/useNotification';
 import { PageHeader } from '../../components/common/PageHeader';
 
 export function Dashboard() {
