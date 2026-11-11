@@ -114,7 +114,7 @@ public class AuthService : IAuthService
         if (user is null || !BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
             return false;
 
-        if (string.IsNullOrWhiteSpace(request.NewPassword) || request.NewPassword.Length < 12 ||
+        if (string.IsNullOrWhiteSpace(request.NewPassword) || request.NewPassword.Length < 12 || request.NewPassword.Length > 128 ||
             request.NewPassword != request.ConfirmPassword ||
             BCrypt.Net.BCrypt.Verify(request.NewPassword, user.PasswordHash))
             return false;
