@@ -55,10 +55,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const logout = useCallback(() => {
-    try {
-      void authService.logout();
-    } catch {
-      /* ignore */
+    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+    if (refreshToken) {
+      // Best-effort server-side revocation; always clear local session immediately.
+      void authService.logout(refreshToken).catch(() => undefined);
     }
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
