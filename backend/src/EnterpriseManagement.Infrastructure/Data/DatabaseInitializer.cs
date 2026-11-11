@@ -20,6 +20,11 @@ public static class DatabaseInitializer
 
             if (await context.Roles.AnyAsync()) return;
 
+            var adminPassword = configuration["BootstrapAdmin:Password"];
+            if (string.IsNullOrWhiteSpace(adminPassword) || adminPassword.Length < 16)
+                throw new InvalidOperationException("BootstrapAdmin:Password must be configured with at least 16 characters for initial database seeding.");
+
+
             var permissions = new List<Permission>
             {
                 new() { Name = "View Users", Module = "Users", Action = "View", CreatedAt = DateTime.UtcNow },
@@ -74,10 +79,6 @@ public static class DatabaseInitializer
                 }
             }
             await context.SaveChangesAsync();
-
-            var adminPassword = configuration["BootstrapAdmin:Password"];
-            if (string.IsNullOrWhiteSpace(adminPassword) || adminPassword.Length < 16)
-                throw new InvalidOperationException("BootstrapAdmin:Password must be configured with at least 16 characters for initial database seeding.");
 
             var admin = new User
             {
