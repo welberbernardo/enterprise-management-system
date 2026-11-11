@@ -4,7 +4,7 @@ import { LogIn, LogOut } from 'lucide-react';
 import { inventoryService } from '../../services/inventory.service';
 
 import { useNotification } from '../../hooks/useNotification';
-import { getErrorMessage } from '../../services/api';
+
 import { useDebounce } from '../../hooks/useDebounce';
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/ui/Card';
@@ -21,7 +21,7 @@ import { StockEntry } from './StockEntry';
 import { StockExit } from './StockExit';
 
 export function InventoryList() {
-  const notify = useNotification();
+
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<StockMovementFilters>({ search: '', page: PAGINATION.DEFAULT_PAGE, limit: PAGINATION.DEFAULT_LIMIT, type: undefined });
   const debounced = useDebounce(filters.search ?? '', 400);
