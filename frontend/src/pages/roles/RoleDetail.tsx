@@ -2,7 +2,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Shield } from 'lucide-react';
 import { roleService } from '../../services/role.service';
-import { useNotification } from '../../hooks/useNotification';
 
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card, CardHeader } from '../../components/ui/Card';
