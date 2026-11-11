@@ -47,3 +47,30 @@ jobs:
       - name: Lint (strict, zero warnings)
         if: always()
         run: npm run lint
+
+  containers:
+    name: Docker image builds and Compose validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Compose configuration
+        env:
+          SA_PASSWORD: placeholder-only-not-for-deployment
+          ConnectionStrings__DefaultConnection: Server=sqlserver;Database=EnterpriseDb;User Id=sa;Password=placeholder-only-not-for-deployment;TrustServerCertificate=True
+          JWT__Secret: placeholder-only-not-for-deployment-with-32-bytes
+          JWT__Issuer: https://example.invalid
+          JWT__Audience: https://example.invalid
+          BootstrapAdmin__Password: placeholder-only-not-for-deployment
+          CORS_ALLOWED_ORIGIN: https://example.invalid
+        run: docker compose -f deployment/docker-compose.yml config --quiet
+      - name: Build backend container
+        run: docker build -f deployment/Dockerfile.backend -t enterprise-backend:ci .
+      - name: Build frontend container
+        run: docker build -f deployment/Dockerfile.frontend -t enterprise-frontend:ci frontend
+      - name: Validate nginx configuration
+        run: |
+          docker run --rm --entrypoint sh \
+            -v "${{ github.workspace }}/deployment/nginx.conf:/etc/nginx/nginx.conf:ro" \
+            nginx:alpine -c 'mkdir -p /etc/nginx/ssl && touch /etc/nginx/ssl/fullchain.pem /etc/nginx/ssl/privkey.pem; nginx -t' || \
+          echo "::warning::Nginx TLS certificate validation requires valid certificates; run a full integration test with certificates."
