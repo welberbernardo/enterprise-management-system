@@ -63,6 +63,7 @@ jobs:
           JWT__Audience: https://example.invalid
           BootstrapAdmin__Password: placeholder-only-not-for-deployment
           CORS_ALLOWED_ORIGIN: https://example.invalid
+          TLS_CERT_DIR: /tmp/ci-tls-certs-not-for-deployment
         run: docker compose -f deployment/docker-compose.yml config --quiet
       - name: Build backend container
         run: docker build -f deployment/Dockerfile.backend -t enterprise-backend:ci .
