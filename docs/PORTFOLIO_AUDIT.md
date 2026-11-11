@@ -31,3 +31,11 @@ Suggested title: **Enterprise Management System | ASP.NET Core 9, React & SQL Se
 Suggested description: **A full-stack enterprise management application organized into API, application, domain and infrastructure layers, with a React/TypeScript frontend and SQL Server persistence.**
 
 Avoid claiming deployment, test coverage, security certification or production readiness without evidence.
+
+## Preparation branch changes (unverified)
+
+- Removed the JWT fallback key from API startup and cleared committed JWT signing values in both appsettings files. The app now requires an externally supplied signing secret of at least 32 UTF-8 bytes.
+- Replaced permissive CORS fallback with explicit origins and limited Swagger middleware to Development.
+- Removed the hard-coded bootstrap administrator password. Fresh database seeding now requires `BootstrapAdmin__Password` of at least 16 characters. Existing seeded administrators are **not** automatically reset and must be rotated separately.
+- These changes are not a substitute for scanning Git history, rotating credentials or running the build and tests.
+- **Additional finding:** the database initializer currently grants all permissions to Administrator, Manager and Staff roles. Review and correct role-based access before any public deployment.
