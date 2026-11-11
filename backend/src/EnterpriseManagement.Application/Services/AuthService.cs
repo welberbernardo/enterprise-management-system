@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using AutoMapper;
 using BCrypt.Net;
 using EnterpriseManagement.Core.DTOs.Auth;
@@ -101,15 +100,11 @@ public class AuthService : IAuthService
         return true;
     }
 
-    public async Task<bool> ForgotPasswordAsync(ForgotPasswordRequest request, CancellationToken cancellationToken = default)
+    public Task<bool> ForgotPasswordAsync(ForgotPasswordRequest request, CancellationToken cancellationToken = default)
     {
-        var user = await _unitOfWork.Repository<User>().FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
-        if (user is null) return false;
-
-        var resetToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
-        await _emailService.SendTemplateEmailAsync(user.Email, "Password Reset",
-            new Dictionary<string, string> { { "Username", user.Username }, { "ResetToken", resetToken } }, cancellationToken);
-        return true;
+        // No persisted token, expiry, redemption endpoint, or verified email delivery exists yet.
+        // Fail closed instead of generating unusable recovery credentials.
+        return Task.FromResult(false);
     }
 
     public async Task<bool> ChangePasswordAsync(int userId, ChangePasswordRequest request, CancellationToken cancellationToken = default)
