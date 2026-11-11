@@ -226,6 +226,24 @@ public class AuthServiceTests
         changed.Should().BeFalse();
     }
 
+    [Fact]
+    public async Task RefreshTokenAsync_RejectsTokenBoundToPreviousPassword()
+    {
+        var (service, userId) = SeedAdmin();
+        var login = await service.LoginAsync(new LoginRequest { Username = "admin", Password = "Admin@123" });
+        login.Should().NotBeNull();
+        // Password update simulates a concurrent change that occurs after token issuance.
+        var user = _fixture.Context.Users.Single(u => u.Id == userId);
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword("NewSecurePass@123");
+        await _fixture.Context.SaveChangesAsync();
+
+        var result = await service.RefreshTokenAsync(new RefreshTokenRequest
+        {
+            RefreshToken = login!.RefreshToken
+        });
+        result.Should().BeNull();
+    }
+
 }
 
 internal class FakeEmailService : IEmailService
