@@ -22,8 +22,8 @@ export const authService = {
       accessTokenExpiry: response.accessTokenExpiry,
     };
   },
-  async logout(): Promise<void> {
-    return http.post<void>('/auth/logout');
+  async logout(refreshToken: string): Promise<void> {
+    await http.post<boolean>('/auth/revoke', { refreshToken });
   },
   async forgotPassword(payload: ForgotPasswordRequest): Promise<void> {
     return http.post<void>('/auth/forgot-password', payload);
