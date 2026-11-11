@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Plus, Pencil, Trash2, UserCircle, Mail, Phone, MapPin } from 'lucide-react';
 import { customerService } from '../../services/customer.service';
 import { useNotification } from '../../hooks/useNotification';
-import { getErrorMessage } from '../../services/api';
 import { useDebounce } from '../../hooks/useDebounce';
 import { PageHeader } from '../../components/common/PageHeader';
 import { Card } from '../../components/ui/Card';
@@ -16,7 +15,6 @@ import { SearchBar } from '../../components/forms/SearchBar';
 import { Select } from '../../components/ui/Select';
 import { Spinner } from '../../components/ui/Spinner';
 import { PAGINATION } from '../../utils/constants';
-import { formatCurrency } from '../../utils/formatters';
 import type { Customer, CustomerFilters } from '../../types/customer.types';
 import { CustomerForm } from './CustomerForm';
 
