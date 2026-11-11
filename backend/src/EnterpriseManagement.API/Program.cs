@@ -115,7 +115,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await DatabaseInitializer.SeedAsync(db);
+    await DatabaseInitializer.SeedAsync(db, builder.Configuration);
 }
 
 // Middleware pipeline
