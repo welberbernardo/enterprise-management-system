@@ -141,14 +141,141 @@ public class AuthServiceTests
     }
 
     [Fact]
+    public async Task UpdateProfileAsync_RejectsEmailAlreadyUsedByAnotherUser()
+    {
+        var (service, userId) = SeedAdmin();
+        var roleId = _fixture.Context.Users.Single(u => u.Id == userId).RoleId;
+        var uow = _fixture.CreateUnitOfWork();
+        await uow.Repository<User>().AddAsync(new User
+        {
+            Username = "second",
+            Email = "second@example.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("AnotherSecurePass@123"),
+            FirstName = "Second",
+            LastName = "User",
+            RoleId = roleId,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        });
+        await uow.SaveChangesAsync();
+
+        var result = await service.UpdateProfileAsync(userId, new UpdateUserDto
+        {
+            Email = " SECOND@EXAMPLE.COM ",
+            FirstName = "Changed",
+            LastName = "Admin"
+        });
+
+        result.Should().BeNull();
+        var unchanged = _fixture.Context.Users.Single(u => u.Id == userId);
+        unchanged.Email.Should().Be("admin@x.com");
+        unchanged.FirstName.Should().Be("Sys");
+    }
+
+    [Fact]
     public async Task ChangePasswordAsync_UpdatesPassword()
     {
         var (service, userId) = SeedAdmin();
-        var ok = await service.ChangePasswordAsync(userId, new ChangePasswordRequest { CurrentPassword = "Admin@123", NewPassword = "NewPass@123" });
+        var ok = await service.ChangePasswordAsync(userId, new ChangePasswordRequest { CurrentPassword = "Admin@123", NewPassword = "NewSecurePass@123", ConfirmPassword = "NewSecurePass@123" });
         ok.Should().BeTrue();
-        var login = await service.LoginAsync(new LoginRequest { Username = "admin", Password = "NewPass@123" });
+        var login = await service.LoginAsync(new LoginRequest { Username = "admin", Password = "NewSecurePass@123" });
         login.Should().NotBeNull();
     }
+    [Fact]
+    public async Task ChangePasswordAsync_RejectsMismatchedConfirmation()
+    {
+        var (service, userId) = SeedAdmin();
+        var ok = await service.ChangePasswordAsync(userId, new ChangePasswordRequest
+        {
+            CurrentPassword = "Admin@123",
+            NewPassword = "NewSecurePass@123",
+            ConfirmPassword = "DifferentPass@123"
+        });
+        ok.Should().BeFalse();
+        (await service.LoginAsync(new LoginRequest { Username = "admin", Password = "Admin@123" }))
+            .Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_RevokesExistingRefreshTokens()
+    {
+        var (service, userId) = SeedAdmin();
+        var login = await service.LoginAsync(new LoginRequest { Username = "admin", Password = "Admin@123" });
+        login.Should().NotBeNull();
+
+        var changed = await service.ChangePasswordAsync(userId, new ChangePasswordRequest
+        {
+            CurrentPassword = "Admin@123",
+            NewPassword = "NewSecurePass@123",
+            ConfirmPassword = "NewSecurePass@123"
+        });
+        changed.Should().BeTrue();
+
+        var refreshed = await service.RefreshTokenAsync(new RefreshTokenRequest
+        {
+            RefreshToken = login!.RefreshToken
+        });
+        refreshed.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_RejectsTooShortPassword()
+    {
+        var (service, userId) = SeedAdmin();
+        var ok = await service.ChangePasswordAsync(userId, new ChangePasswordRequest
+        {
+            CurrentPassword = "Admin@123",
+            NewPassword = "Short@123",
+            ConfirmPassword = "Short@123"
+        });
+        ok.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_RejectsPasswordsLongerThan128Characters()
+    {
+        var (service, userId) = SeedAdmin();
+        var oversized = new string('A', 129);
+        var changed = await service.ChangePasswordAsync(userId, new ChangePasswordRequest
+        {
+            CurrentPassword = "Admin@123",
+            NewPassword = oversized,
+            ConfirmPassword = oversized
+        });
+        changed.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_RejectsReusingCurrentPassword()
+    {
+        var (service, userId) = SeedAdmin();
+        var changed = await service.ChangePasswordAsync(userId, new ChangePasswordRequest
+        {
+            CurrentPassword = "Admin@123",
+            NewPassword = "Admin@123",
+            ConfirmPassword = "Admin@123"
+        });
+        changed.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RefreshTokenAsync_RejectsTokenBoundToPreviousPassword()
+    {
+        var (service, userId) = SeedAdmin();
+        var login = await service.LoginAsync(new LoginRequest { Username = "admin", Password = "Admin@123" });
+        login.Should().NotBeNull();
+        // Password update simulates a concurrent change that occurs after token issuance.
+        var user = _fixture.Context.Users.Single(u => u.Id == userId);
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword("NewSecurePass@123");
+        await _fixture.Context.SaveChangesAsync();
+
+        var result = await service.RefreshTokenAsync(new RefreshTokenRequest
+        {
+            RefreshToken = login!.RefreshToken
+        });
+        result.Should().BeNull();
+    }
+
 }
 
 internal class FakeEmailService : IEmailService

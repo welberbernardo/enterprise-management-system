@@ -78,7 +78,8 @@ public class AuthService : IAuthService
             return null;
 
         var user = await _unitOfWork.Repository<User>().GetByIdAsync(token.UserId, cancellationToken);
-        if (user is null || !user.IsActive) return null;
+        if (user is null || !user.IsActive || !IsRefreshTokenBoundToPassword(request.RefreshToken, user.PasswordHash))
+            return null;
 
         // A refresh token is single-use. Revoke it before issuing a replacement.
         // Concurrent refresh requests should additionally be protected by a database concurrency constraint.
@@ -114,9 +115,23 @@ public class AuthService : IAuthService
         if (user is null || !BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
             return false;
 
+        if (string.IsNullOrWhiteSpace(request.NewPassword) || request.NewPassword.Length < 12 || request.NewPassword.Length > 128 ||
+            request.NewPassword != request.ConfirmPassword ||
+            BCrypt.Net.BCrypt.Verify(request.NewPassword, user.PasswordHash))
+            return false;
+
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
         user.UpdatedAt = DateTime.UtcNow;
         _unitOfWork.Repository<User>().Update(user);
+        // Revoke outstanding refresh tokens after a password change.
+        var refreshTokens = await _unitOfWork.Repository<RefreshToken>().Query()
+            .Where(t => t.UserId == userId && !t.IsRevoked)
+            .ToListAsync(cancellationToken);
+        foreach (var token in refreshTokens)
+        {
+            token.IsRevoked = true;
+            _unitOfWork.Repository<RefreshToken>().Update(token);
+        }
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return true;
     }
@@ -136,7 +151,15 @@ public class AuthService : IAuthService
         var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId, cancellationToken);
         if (user is null) return null;
 
-        user.Email = request.Email;
+        // Prevent a profile update from taking an email address already assigned
+        // to another account (including case-only variations).
+        var normalizedEmail = request.Email.Trim().ToUpperInvariant();
+        var emailInUse = await _unitOfWork.Repository<User>().AnyAsync(
+            other => other.Id != userId && other.Email.ToUpper() == normalizedEmail,
+            cancellationToken);
+        if (emailInUse) return null;
+
+        user.Email = request.Email.Trim();
         user.FirstName = request.FirstName;
         user.LastName = request.LastName;
         user.Phone = request.Phone;
@@ -174,7 +197,11 @@ public class AuthService : IAuthService
         var roles = user.Role != null ? new List<string> { user.Role.Name } : new List<string>();
 
         var accessToken = _jwtService.GenerateAccessToken(user.Id, user.Username, roles, permissions);
-        var refreshTokenStr = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
+        // Bind every refresh token to the password hash current at issuance.
+        // A concurrent password change invalidates even a token issued just after
+        // the revocation query, without requiring a new database column.
+        var refreshTokenStr = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48))
+            + "." + PasswordVersion(user.PasswordHash);
 
         var refreshToken = new RefreshToken
         {
@@ -186,8 +213,8 @@ public class AuthService : IAuthService
         };
         await _unitOfWork.Repository<RefreshToken>().AddAsync(refreshToken, cancellationToken);
 
-        user.LastLoginAt = DateTime.UtcNow;
-        _unitOfWork.Repository<User>().Update(user);
+        // Do not save a stale User entity during token rotation. Updating all
+        // properties could overwrite a concurrent password change.
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         await _auditService.LogAsync(user.Id, "Login", nameof(User), user.Id.ToString(), ipAddress: ipAddress, userAgent: userAgent, cancellationToken: cancellationToken);
@@ -204,4 +231,21 @@ public class AuthService : IAuthService
             Permissions = permissions
         };
     }
+    private static string PasswordVersion(string passwordHash)
+    {
+        return Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(passwordHash)));
+    }
+
+    private static bool IsRefreshTokenBoundToPassword(string token, string passwordHash)
+    {
+        var separator = token.LastIndexOf('.');
+        if (separator < 0) return false;
+        var expected = PasswordVersion(passwordHash);
+        var supplied = token[(separator + 1)..];
+        return supplied.Length == expected.Length &&
+            CryptographicOperations.FixedTimeEquals(
+                System.Text.Encoding.ASCII.GetBytes(supplied),
+                System.Text.Encoding.ASCII.GetBytes(expected));
+    }
+
 }
