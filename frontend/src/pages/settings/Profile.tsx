@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -33,7 +34,8 @@ type ProfileValues = z.infer<typeof profileSchema>;
 type PasswordValues = z.infer<typeof passwordSchema>;
 
 export function Profile() {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, logout } = useAuth();
+  const navigate = useNavigate();
   const notify = useNotification();
   const [tab, setTab] = useState('info');
 
@@ -56,8 +58,10 @@ export function Profile() {
   const onPassword = async (values: PasswordValues) => {
     try {
       await authService.changePassword(values);
-      notify.success('Palavra-passe alterada. Inicie sessão novamente nos outros dispositivos.');
+      notify.success('Palavra-passe alterada. Inicie sessão novamente para continuar.');
       passwordMethods.reset();
+      logout();
+      navigate('/login', { replace: true });
     } catch (e) {
       notify.error(getErrorMessage(e));
     }
