@@ -205,8 +205,8 @@ public class AuthService : IAuthService
         };
         await _unitOfWork.Repository<RefreshToken>().AddAsync(refreshToken, cancellationToken);
 
-        user.LastLoginAt = DateTime.UtcNow;
-        _unitOfWork.Repository<User>().Update(user);
+        // Do not save a stale User entity during token rotation. Updating all
+        // properties could overwrite a concurrent password change.
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         await _auditService.LogAsync(user.Id, "Login", nameof(User), user.Id.ToString(), ipAddress: ipAddress, userAgent: userAgent, cancellationToken: cancellationToken);
