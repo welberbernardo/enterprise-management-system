@@ -50,7 +50,11 @@ public class ChangePasswordRequestValidator : AbstractValidator<ChangePasswordRe
     public ChangePasswordRequestValidator()
     {
         RuleFor(x => x.CurrentPassword).NotEmpty();
-        RuleFor(x => x.NewPassword).NotEmpty().MinimumLength(6);
+        RuleFor(x => x.NewPassword).NotEmpty().MinimumLength(12).MaximumLength(128);
+        RuleFor(x => x.ConfirmPassword).Equal(x => x.NewPassword)
+            .WithMessage("Password confirmation does not match.");
+        RuleFor(x => x.NewPassword).NotEqual(x => x.CurrentPassword)
+            .WithMessage("New password must differ from current password.");
     }
 }
 
