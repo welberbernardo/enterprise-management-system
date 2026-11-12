@@ -151,7 +151,15 @@ public class AuthService : IAuthService
         var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId, cancellationToken);
         if (user is null) return null;
 
-        user.Email = request.Email;
+        // Prevent a profile update from taking an email address already assigned
+        // to another account (including case-only variations).
+        var normalizedEmail = request.Email.Trim().ToUpperInvariant();
+        var emailInUse = await _unitOfWork.Repository<User>().AnyAsync(
+            other => other.Id != userId && other.Email.ToUpper() == normalizedEmail,
+            cancellationToken);
+        if (emailInUse) return null;
+
+        user.Email = request.Email.Trim();
         user.FirstName = request.FirstName;
         user.LastName = request.LastName;
         user.Phone = request.Phone;
