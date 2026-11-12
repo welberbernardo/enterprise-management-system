@@ -8,6 +8,7 @@ import {
   TrendingUp,
   Clock,
   ArrowRight,
+  RefreshCw,
 } from 'lucide-react';
 import { dashboardService } from '../../services/dashboard.service';
 import { StatCard } from '../../components/charts/StatCard';
@@ -22,50 +23,57 @@ import { formatCurrency, formatDateTime, formatRelativeTime } from '../../utils/
 import { PageHeader } from '../../components/common/PageHeader';
 
 export function Dashboard() {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ['dashboard'],
     queryFn: dashboardService.getData,
   });
 
   if (error) {
-    return <div className="text-center text-danger-600 py-20">Failed to load dashboard data.</div>;
+    return <div className="text-center text-danger-600 py-20">Não foi possível carregar o painel. Tente atualizar a página.</div>;
   }
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Dashboard" subtitle="Welcome back to your enterprise overview" />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <PageHeader title="Painel de gestão" subtitle="Indicadores e atividade da empresa" />
+        <button type="button" onClick={() => void refetch()} disabled={isFetching}
+          aria-label="Atualizar indicadores" className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:hover:bg-slate-800">
+          <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+          Atualizar
+        </button>
+      </div>
 
       {isLoading ? (
         <div className="flex justify-center py-20">
-          <Spinner size="lg" label="Loading dashboard..." />
+          <Spinner size="lg" label="A carregar indicadores..." />
         </div>
       ) : (
         data && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
               <StatCard
-                title="Total Orders"
+                title="Total de encomendas"
                 value={data.stats.totalOrders}
                 icon={ShoppingCart}
                 color="primary"
                 growth={data.stats.ordersGrowth}
               />
               <StatCard
-                title="Total Customers"
+                title="Total de clientes"
                 value={data.stats.totalCustomers}
                 icon={Users}
                 color="info"
                 growth={data.stats.customersGrowth}
               />
               <StatCard
-                title="Total Products"
+                title="Total de produtos"
                 value={data.stats.totalProducts}
                 icon={Package}
                 color="warning"
                 growth={data.stats.productsGrowth}
               />
               <StatCard
-                title="Revenue"
+                title="Faturação"
                 value={data.stats.totalRevenue}
                 icon={DollarSign}
                 color="success"
@@ -76,12 +84,12 @@ export function Dashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <Card className="lg:col-span-2">
-                <CardHeader title="Sales Over Time" subtitle="Revenue and orders trend" />
+                <CardHeader title="Evolução das vendas" subtitle="Faturação e encomendas ao longo do tempo" />
                 <LineChart
                   data={data.salesOverTime.map((p) => ({ date: p.date, Sales: p.sales, Orders: p.orders }))}
                   xKey="date"
                   series={[
-                    { key: 'Sales', name: 'Sales ($)', color: '#2563eb' },
+                    { key: 'Sales', name: 'Vendas', color: '#2563eb' },
                     { key: 'Orders', name: 'Orders', color: '#16a34a' },
                   ]}
                   height={260}
@@ -89,7 +97,7 @@ export function Dashboard() {
               </Card>
 
               <Card>
-                <CardHeader title="Orders by Status" />
+                <CardHeader title="Encomendas por estado" />
                 <PieChart
                   data={data.ordersByStatus.map((s) => ({ name: s.status, value: s.count }))}
                   height={260}
@@ -100,10 +108,10 @@ export function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <Card className="lg:col-span-2">
                 <CardHeader
-                  title="Top Products"
+                  title="Produtos mais vendidos"
                   action={
                     <Link to="/products" className="text-sm text-primary-600 hover:underline flex items-center">
-                      View all <ArrowRight className="h-4 w-4 ml-1" />
+                      Ver todos <ArrowRight className="h-4 w-4 ml-1" />
                     </Link>
                   }
                 />
@@ -115,8 +123,8 @@ export function Dashboard() {
                   }))}
                   xKey="name"
                   series={[
-                    { key: 'Revenue', name: 'Revenue ($)', color: '#2563eb' },
-                    { key: 'Quantity', name: 'Quantity', color: '#16a34a' },
+                    { key: 'Revenue', name: 'Faturação', color: '#2563eb' },
+                    { key: 'Quantity', name: 'Quantidade', color: '#16a34a' },
                   ]}
                   height={260}
                 />
@@ -124,10 +132,10 @@ export function Dashboard() {
 
               <Card>
                 <CardHeader
-                  title="Recent Activity"
+                  title="Atividade recente"
                   action={
                     <Link to="/audit" className="text-sm text-primary-600 hover:underline">
-                      View all
+                      Ver todos
                     </Link>
                   }
                 />
@@ -149,21 +157,21 @@ export function Dashboard() {
 
             <Card>
               <CardHeader
-                title="Recent Orders"
+                title="Encomendas recentes"
                 action={
                   <Link to="/orders" className="text-sm text-primary-600 hover:underline flex items-center">
-                    View all <ArrowRight className="h-4 w-4 ml-1" />
+                    Ver todos <ArrowRight className="h-4 w-4 ml-1" />
                   </Link>
                 }
               />
               <Table
                 keyField="id"
                 columns={[
-                  { key: 'orderNumber', header: 'Order #' },
-                  { key: 'customerName', header: 'Customer' },
+                  { key: 'orderNumber', header: 'N.º encomenda' },
+                  { key: 'customerName', header: 'Cliente' },
                   {
                     key: 'status',
-                    header: 'Status',
+                    header: 'Estado',
                     render: (row) => <Badge status={row.status}>{row.status}</Badge>,
                   },
                   {
@@ -172,7 +180,7 @@ export function Dashboard() {
                     align: 'right',
                     render: (row) => formatCurrency(row.total),
                   },
-                  { key: 'date', header: 'Date', render: (row) => formatDateTime(row.date) },
+                  { key: 'date', header: 'Data', render: (row) => formatDateTime(row.date) },
                 ]}
                 data={data.recentOrders}
               />
@@ -185,7 +193,7 @@ export function Dashboard() {
                     <TrendingUp className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500">Pending Invoices</p>
+                    <p className="text-sm text-slate-500">Faturas pendentes</p>
                     <p className="text-xl font-bold">{data.stats.pendingInvoices}</p>
                   </div>
                 </div>
@@ -196,7 +204,7 @@ export function Dashboard() {
                     <Package className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500">Low Stock Items</p>
+                    <p className="text-sm text-slate-500">Produtos com stock baixo</p>
                     <p className="text-xl font-bold">{data.stats.lowStockProducts}</p>
                   </div>
                 </div>
@@ -207,7 +215,7 @@ export function Dashboard() {
                     <Users className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500">Total Suppliers</p>
+                    <p className="text-sm text-slate-500">Total de fornecedores</p>
                     <p className="text-xl font-bold">{data.stats.totalSuppliers}</p>
                   </div>
                 </div>
