@@ -2,7 +2,7 @@
 
 A full-stack enterprise management application built with **ASP.NET Core 9**, **React 18**, **TypeScript**, **Vite**, and **SQL Server**.
 
-> **Portfolio status:** This repository is undergoing documentation, security and build verification. Features described below are represented in the codebase, but not all workflows have been end-to-end tested. Do not deploy to production without a security review.
+> **Portfolio status:** Build and unit-test CI is passing; security and runtime verification remain incomplete. Features described below are represented in the codebase, but not all workflows have been end-to-end tested. Do not deploy to production without a security review.
 
 ## Architecture
 
@@ -29,21 +29,21 @@ Authentication and permissions, users and roles, customers, suppliers, products,
 ## Local development (verification required)
 
 1. Clone **this repository** and configure a local SQL Server instance.
-2. Supply database connection and JWT signing settings using local secrets or environment variables. Required keys include `Jwt__Secret` (at least 32 UTF-8 bytes) and, for a fresh database, `BootstrapAdmin__Password` (at least 16 characters). Never commit real credentials. Never commit real credentials.
+2. Supply database connection and JWT signing settings using local secrets or environment variables. Required keys include `Jwt__Secret` (at least 32 UTF-8 bytes) and, for a fresh database, `BootstrapAdmin__Password` (at least 16 characters). Never commit real credentials.
 3. From `backend`, run `dotnet restore EnterpriseManagement.sln`, then `dotnet build EnterpriseManagement.sln`.
 4. From `backend`, run `dotnet test EnterpriseManagement.sln`.
 5. From `frontend`, run `npm install`, `npm run typecheck`, `npm run lint` and `npm run build`.
 6. Start the API from `backend/src/EnterpriseManagement.API` with `dotnet run`; start the frontend from `frontend` with `npm run dev`.
 
-> These commands are based on the repository layout and package scripts. Successful execution has **not** yet been independently verified.
+> GitHub Actions has verified backend restore/build/unit tests, frontend typecheck/lint/build, Docker image builds, Compose configuration and Nginx syntax. Local runtime, integration tests, SQL Server startup and browser flows have **not** been verified.
 
 ## Security and deployment
 
-Do not reuse JWT keys or example credentials. The preparation branch removes the known hard-coded JWT fallback and bootstrap password, requires explicit CORS origins and limits Swagger to Development. These changes have not been build-tested. Before deploying, validate authorization and review committed configuration and Git history for secrets. See `docs/PORTFOLIO_AUDIT.md`.
+Do not reuse JWT keys or example credentials. The application requires an externally supplied JWT signing secret, an explicit database connection, and a bootstrap admin password for fresh databases. CORS origins must be explicit and Swagger is limited to Development. These changes have passed build/unit-test CI, but do not constitute a production security assessment. Before deploying, validate authorization and review committed configuration and Git history for secrets. See `docs/PORTFOLIO_AUDIT.md`.
 
 ## Tests and screenshots
 
-Unit and integration test projects exist, but results are not yet verified. Add real screenshots and a working demonstration only after running and validating the application.
+Unit tests pass in GitHub Actions; the integration test project exists but is not included in the verified CI test step. Add real screenshots and a working demonstration only after running and validating the application.
 
 ## License
 
