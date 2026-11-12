@@ -141,6 +141,38 @@ public class AuthServiceTests
     }
 
     [Fact]
+    public async Task UpdateProfileAsync_RejectsEmailAlreadyUsedByAnotherUser()
+    {
+        var (service, userId) = SeedAdmin();
+        var roleId = _fixture.Context.Users.Single(u => u.Id == userId).RoleId;
+        var uow = _fixture.CreateUnitOfWork();
+        await uow.Repository<User>().AddAsync(new User
+        {
+            Username = "second",
+            Email = "second@example.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("AnotherSecurePass@123"),
+            FirstName = "Second",
+            LastName = "User",
+            RoleId = roleId,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        });
+        await uow.SaveChangesAsync();
+
+        var result = await service.UpdateProfileAsync(userId, new UpdateUserDto
+        {
+            Email = " SECOND@EXAMPLE.COM ",
+            FirstName = "Changed",
+            LastName = "Admin"
+        });
+
+        result.Should().BeNull();
+        var unchanged = _fixture.Context.Users.Single(u => u.Id == userId);
+        unchanged.Email.Should().Be("admin@x.com");
+        unchanged.FirstName.Should().Be("Sys");
+    }
+
+    [Fact]
     public async Task ChangePasswordAsync_UpdatesPassword()
     {
         var (service, userId) = SeedAdmin();
